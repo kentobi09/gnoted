@@ -885,14 +885,11 @@ export default function App() {
         />
 
         <div className="w-full max-w-sm bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
-          <div className="w-14 h-14 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-4 border border-[#FF6B00]/30">
+          <div className="w-14 h-14 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-6 border border-[#FF6B00]/30">
             <ShieldCheck className="w-8 h-8 stroke-[2]" />
           </div>
 
-          <h1 className="text-xl font-bold mb-1 tracking-tight text-white">GNOTED Setup</h1>
-          <p className="text-xs text-[#8E8E93] mb-6">
-            Set a master passcode to encrypt and secure your private notes & tasks.
-          </p>
+          <h1 className="text-2xl font-black mb-6 tracking-wider text-white uppercase">GNOTED</h1>
 
           {regError && (
             <div className="bg-[#FF3B30]/15 border border-[#FF3B30]/30 rounded-xl p-2.5 mb-4 text-xs text-[#FF3B30] w-full text-left">
@@ -1062,14 +1059,11 @@ export default function App() {
         />
 
         <div className="w-full max-w-sm bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
-          <div className="w-14 h-14 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-4 border border-[#FF6B00]/30">
+          <div className="w-14 h-14 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-6 border border-[#FF6B00]/30">
             <Lock className="w-7 h-7 stroke-[2]" />
           </div>
 
-          <h1 className="text-xl font-bold mb-1 tracking-tight text-white">GNOTED Unlock</h1>
-          <p className="text-xs text-[#8E8E93] leading-relaxed mb-6">
-            Enter your secret passcode to access GNOTED.
-          </p>
+          <h1 className="text-2xl font-black mb-6 tracking-wider text-white uppercase">GNOTED</h1>
 
           {lockError && (
             <div className="bg-[#FF3B30]/15 border border-[#FF3B30]/30 rounded-xl p-2.5 mb-4 text-xs text-[#FF3B30] w-full text-left">
@@ -1653,16 +1647,6 @@ export default function App() {
                       </button>
                     </div>
 
-                    {/* COLLAPSED SUMMARY VIEW (NO PRESHOWING SHAPE DETAILS) */}
-                    {!isEditingPassword && (
-                      <div className="flex items-center justify-between bg-[#141416] p-2.5 rounded-xl border border-[#2C2C2E]">
-                        <span className="text-xs font-medium text-[#8E8E93]">Passcode & Verification Shape Configured</span>
-                        <span className="text-[10px] font-semibold text-[#34C759] bg-[#34C759]/15 border border-[#34C759]/30 px-2 py-0.5 rounded-full">
-                          Active ✓
-                        </span>
-                      </div>
-                    )}
-
                     {/* EXPANDED EDIT DETAILS FORM */}
                     {isEditingPassword && (
                       <div className="flex flex-col gap-3 pt-1 border-t border-[#2C2C2E]">
@@ -1755,7 +1739,7 @@ export default function App() {
 
                   <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-[#FF6B00] flex items-center gap-1.5">
+                      <label className="text-xs font-semibold text-white flex items-center gap-1.5">
                         <Webhook className="w-4 h-4 text-[#FF6B00]" />
                         Google Drive Webhook Integration
                       </label>
@@ -1766,56 +1750,43 @@ export default function App() {
                             ? 'bg-[#FF6B00] text-white' 
                             : 'bg-[#1C1C1E] border border-[#2C2C2E] text-[#8E8E93] hover:text-white'
                         }`}
-                        title="Edit Settings"
+                        title={isEditingGDriveConfig ? 'Collapse Settings' : 'Edit Integration Links'}
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-semibold text-[#8E8E93] flex items-center gap-1.5">
-                        <Link className="w-3.5 h-3.5 text-[#FF6B00]" />
-                        Google Drive Folder Link
-                      </label>
-                      <input
-                        type="text"
-                        disabled={!isEditingGDriveConfig}
-                        placeholder="https://drive.google.com/drive/folders/..."
-                        value={gdriveLinkInput}
-                        onChange={(e) => setGdriveLinkInput(e.target.value)}
-                        className={`w-full border rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] transition-colors ${
-                          isEditingGDriveConfig 
-                            ? 'bg-[#1C1C1E] border-[#FF6B00] focus:outline-none' 
-                            : 'bg-[#141416] border-[#2C2C2E] opacity-75 cursor-not-allowed'
-                        }`}
-                      />
-                    </div>
+                    {isEditingGDriveConfig && (
+                      <div className="flex flex-col gap-3 pt-1 border-t border-[#2C2C2E]">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold text-[#8E8E93] flex items-center gap-1.5">
+                            <Link className="w-3.5 h-3.5 text-[#FF6B00]" />
+                            Google Drive Folder Link
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="https://drive.google.com/drive/folders/..."
+                            value={gdriveLinkInput}
+                            onChange={(e) => setGdriveLinkInput(e.target.value)}
+                            className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
+                          />
+                        </div>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-semibold text-[#8E8E93] flex items-center gap-1.5">
-                        <Webhook className="w-3.5 h-3.5 text-[#FF6B00]" />
-                        Apps Script Webhook URL
-                      </label>
-                      <input
-                        type="text"
-                        disabled={!isEditingGDriveConfig}
-                        placeholder="https://script.google.com/macros/s/.../exec"
-                        value={gdriveWebhookInput}
-                        onChange={(e) => setGdriveWebhookInput(e.target.value)}
-                        className={`w-full border rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] transition-colors ${
-                          isEditingGDriveConfig 
-                            ? 'bg-[#1C1C1E] border-[#FF6B00] focus:outline-none' 
-                            : 'bg-[#141416] border-[#2C2C2E] opacity-75 cursor-not-allowed'
-                        }`}
-                      />
-                    </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold text-[#8E8E93] flex items-center gap-1.5">
+                            <Webhook className="w-3.5 h-3.5 text-[#FF6B00]" />
+                            Apps Script Webhook URL
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="https://script.google.com/macros/s/.../exec"
+                            value={gdriveWebhookInput}
+                            onChange={(e) => setGdriveWebhookInput(e.target.value)}
+                            className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
+                          />
+                        </div>
 
-                    <AnimatePresence>
-                      {(isEditingGDriveConfig || hasUnsavedConfigChanges) && (
-                        <motion.button
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 5 }}
+                        <button
                           onClick={handleSaveGDriveConfig}
                           className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-md ${
                             isLinkSavedFeedback
@@ -1831,9 +1802,9 @@ export default function App() {
                           ) : (
                             'Save Changes'
                           )}
-                        </motion.button>
-                      )}
-                    </AnimatePresence>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <button
