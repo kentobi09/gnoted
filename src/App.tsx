@@ -854,25 +854,25 @@ export default function App() {
     );
   }
 
-  // ────────────────── SHAPE SECURITY CHALLENGE SCREEN (STEP 2 AFTER PASSWORD) ──────────────────
+  // ────────────────── ABSTRACT ART WALLPAPER SCREEN (STEALTH PATTERN GATE) ──────────────────
   if (!isUnlocked && isPasswordPassed) {
-    const shapesList = [
-      { id: 'blue_circle', name: 'Blue Circle', color: '#007AFF', shape: 'circle' },
-      { id: 'green_square', name: 'Green Square', color: '#34C759', shape: 'square' },
-      { id: 'red_triangle', name: 'Red Triangle', color: '#FF3B30', shape: 'triangle' },
-      { id: 'yellow_diamond', name: 'Yellow Diamond', color: '#FFCC00', shape: 'diamond' },
-      { id: 'purple_hexagon', name: 'Purple Hexagon', color: '#AF52DE', shape: 'hexagon' },
-      { id: 'gold_star', name: 'Gold Star', color: '#FFD60A', shape: 'star' },
-      { id: 'orange_pentagon', name: 'Orange Pentagon', color: '#FF6B00', shape: 'pentagon' },
-      { id: 'teal_octagon', name: 'Teal Octagon', color: '#5AC8FA', shape: 'octagon' },
-      { id: 'pink_heart', name: 'Pink Heart', color: '#FF2D55', shape: 'heart' },
-      { id: 'cyan_oval', name: 'Cyan Oval', color: '#30B0C7', shape: 'oval' },
-      { id: 'mint_cross', name: 'Mint Cross', color: '#30D158', shape: 'cross' },
-      { id: 'rose_crescent', name: 'Rose Crescent', color: '#FF375F', shape: 'crescent' }
+    const wallpaperShapes = [
+      { id: 'blue_circle', color: '#007AFF', shape: 'circle', top: '10%', left: '12%', size: 76, rotate: 0, opacity: 0.85 },
+      { id: 'rose_crescent', color: '#FF375F', shape: 'crescent', top: '18%', left: '72%', size: 88, rotate: -35, opacity: 0.8 },
+      { id: 'gold_star', color: '#FFD60A', shape: 'star', top: '14%', left: '44%', size: 64, rotate: 24, opacity: 0.9 },
+      { id: 'purple_hexagon', color: '#AF52DE', shape: 'hexagon', top: '40%', left: '16%', size: 94, rotate: -18, opacity: 0.85 },
+      { id: 'orange_pentagon', color: '#FF6B00', shape: 'pentagon', top: '46%', left: '60%', size: 100, rotate: 12, opacity: 0.95 },
+      { id: 'green_square', color: '#34C759', shape: 'square', top: '30%', left: '80%', size: 70, rotate: 38, opacity: 0.8 },
+      { id: 'red_triangle', color: '#FF3B30', shape: 'triangle', top: '66%', left: '10%', size: 92, rotate: -22, opacity: 0.85 },
+      { id: 'yellow_diamond', color: '#FFCC00', shape: 'diamond', top: '76%', left: '42%', size: 78, rotate: 15, opacity: 0.9 },
+      { id: 'teal_octagon', color: '#5AC8FA', shape: 'octagon', top: '80%', left: '78%', size: 74, rotate: -12, opacity: 0.85 },
+      { id: 'pink_heart', color: '#FF2D55', shape: 'heart', top: '34%', left: '38%', size: 68, rotate: 18, opacity: 0.8 },
+      { id: 'cyan_oval', color: '#30B0C7', shape: 'oval', top: '60%', left: '72%', size: 84, rotate: -40, opacity: 0.85 },
+      { id: 'mint_cross', color: '#30D158', shape: 'cross', top: '72%', left: '26%', size: 70, rotate: 28, opacity: 0.8 }
     ];
 
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden">
+      <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-[#090a0f] via-[#040407] to-[#000000] overflow-hidden select-none z-50 font-sans">
         {/* DISMISSABLE TOAST NOTIFICATION BANNER */}
         <AnimatePresence>
           {activeToastAlert && (
@@ -899,47 +899,40 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        <div className="w-full max-w-md bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-5 flex flex-col items-center text-center shadow-2xl relative z-10">
-          <div className="my-2 text-center">
-            <h1 className="text-sm font-semibold tracking-wide text-[#8E8E93] uppercase">Interactive Gallery</h1>
-          </div>
-
-          {/* GRID OF SHAPES IN DIFFERENT COLORS */}
-          <div className="grid grid-cols-3 gap-3 w-full my-4">
-            {shapesList.map((item) => (
-              <motion.button
-                key={item.id}
-                whileTap={{ scale: 0.88 }}
-                onClick={() => handleShapeClick(item.id)}
-                className="w-full aspect-square bg-black border border-[#2C2C2E] hover:border-[#3A3A3C] rounded-2xl flex flex-col items-center justify-center p-3 transition-all shadow-md group active:scale-95"
-              >
-                <svg viewBox="0 0 100 100" className="w-10 h-10 drop-shadow-lg pointer-events-none">
-                  {item.shape === 'circle' && <circle cx="50" cy="50" r="40" fill={item.color} />}
-                  {item.shape === 'square' && <rect x="12" y="12" width="76" height="76" rx="12" fill={item.color} />}
-                  {item.shape === 'triangle' && <polygon points="50,10 90,85 10,85" fill={item.color} />}
-                  {item.shape === 'diamond' && <polygon points="50,10 90,50 50,90 10,50" fill={item.color} />}
-                  {item.shape === 'hexagon' && <polygon points="50,6 90,26 90,74 50,94 10,74 10,26" fill={item.color} />}
-                  {item.shape === 'star' && <polygon points="50,5 63,35 95,38 71,60 78,92 50,75 22,92 29,60 5,38 37,35" fill={item.color} />}
-                  {item.shape === 'pentagon' && <polygon points="50,6 94,38 77,90 23,90 6,38" fill={item.color} />}
-                  {item.shape === 'octagon' && <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill={item.color} />}
-                  {item.shape === 'heart' && <path d="M50 88 C20 60 5 40 15 20 C25 5 45 15 50 25 C55 15 75 5 85 20 C95 40 80 60 50 88 Z" fill={item.color} />}
-                  {item.shape === 'oval' && <ellipse cx="50" cy="50" rx="42" ry="28" fill={item.color} />}
-                  {item.shape === 'cross' && <path d="M35 10 H65 V35 H90 V65 H65 V90 H35 V65 H10 V35 H35 Z" fill={item.color} />}
-                  {item.shape === 'crescent' && <path d="M50 10 A40 40 0 1 0 90 50 A30 30 0 1 1 50 10 Z" fill={item.color} />}
-                </svg>
-              </motion.button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => {
-              setIsPasswordPassed(false);
-              setPentagonTapCount(0);
-            }}
-            className="text-[11px] text-[#636366] hover:text-[#8E8E93] transition-colors mt-2"
-          >
-            ← Back
-          </button>
+        {/* ASYMMETRICAL WALLPAPER SHAPES */}
+        <div className="relative w-full h-full max-w-md mx-auto">
+          {wallpaperShapes.map((item) => (
+            <motion.button
+              key={item.id}
+              whileTap={{ scale: 0.85 }}
+              onClick={() => handleShapeClick(item.id)}
+              style={{
+                position: 'absolute',
+                top: item.top,
+                left: item.left,
+                width: `${item.size}px`,
+                height: `${item.size}px`,
+                transform: `rotate(${item.rotate}deg)`,
+                opacity: item.opacity
+              }}
+              className="flex items-center justify-center outline-none border-none bg-transparent cursor-pointer transition-transform active:scale-90 focus:outline-none"
+            >
+              <svg viewBox="0 0 100 100" className="w-full h-full filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]">
+                {item.shape === 'circle' && <circle cx="50" cy="50" r="42" fill={item.color} />}
+                {item.shape === 'square' && <rect x="10" y="10" width="80" height="80" rx="16" fill={item.color} />}
+                {item.shape === 'triangle' && <polygon points="50,8 92,88 8,88" fill={item.color} />}
+                {item.shape === 'diamond' && <polygon points="50,8 92,50 50,92 8,50" fill={item.color} />}
+                {item.shape === 'hexagon' && <polygon points="50,5 92,25 92,75 50,95 8,75 8,25" fill={item.color} />}
+                {item.shape === 'star' && <polygon points="50,4 63,35 96,38 72,60 79,93 50,75 21,93 28,60 4,38 37,35" fill={item.color} />}
+                {item.shape === 'pentagon' && <polygon points="50,5 95,37 78,91 22,91 5,37" fill={item.color} />}
+                {item.shape === 'octagon' && <polygon points="30,8 70,8 92,30 92,70 70,92 30,92 8,70 8,30" fill={item.color} />}
+                {item.shape === 'heart' && <path d="M50 88 C20 60 5 40 15 20 C25 5 45 15 50 25 C55 15 75 5 85 20 C95 40 80 60 50 88 Z" fill={item.color} />}
+                {item.shape === 'oval' && <ellipse cx="50" cy="50" rx="44" ry="28" fill={item.color} />}
+                {item.shape === 'cross' && <path d="M36 8 H64 V36 H92 V64 H64 V92 H36 V64 H8 V36 H36 Z" fill={item.color} />}
+                {item.shape === 'crescent' && <path d="M50 8 A42 42 0 1 0 92 50 A32 32 0 1 1 50 8 Z" fill={item.color} />}
+              </svg>
+            </motion.button>
+          ))}
         </div>
       </div>
     );
