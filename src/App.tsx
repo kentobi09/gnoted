@@ -93,6 +93,7 @@ const IS_REGISTERED_STORAGE_KEY = 'secure_vault_is_registered';
 const REGISTERED_EMAIL_STORAGE_KEY = 'secure_vault_registered_email';
 const TARGET_SHAPE_STORAGE_KEY = 'secure_vault_target_shape';
 const TARGET_TAPS_STORAGE_KEY = 'secure_vault_target_taps';
+const TARGET_SEQUENCE_STORAGE_KEY = 'secure_vault_target_shape_sequence';
 
 interface ShapeDefinition {
   id: string;
@@ -275,25 +276,32 @@ export default function App() {
     )
   );
 
-  const [targetShapeId, setTargetShapeId] = useState<string>(
-    () => localStorage.getItem(TARGET_SHAPE_STORAGE_KEY) || 'orange_pentagon'
-  );
-  const [targetTapRequired, setTargetTapRequired] = useState<number>(
-    () => parseInt(localStorage.getItem(TARGET_TAPS_STORAGE_KEY) || '5', 10)
-  );
+  const [targetShapeSequence, setTargetShapeSequence] = useState<string[]>(() => {
+    const saved = localStorage.getItem(TARGET_SEQUENCE_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    const oldShape = localStorage.getItem(TARGET_SHAPE_STORAGE_KEY) || 'orange_pentagon';
+    const oldTaps = parseInt(localStorage.getItem(TARGET_TAPS_STORAGE_KEY) || '5', 10);
+    return Array(oldTaps).fill(oldShape);
+  });
 
   // Registration State
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
-  const [regSelectedShape, setRegSelectedShape] = useState('orange_pentagon');
-  const [regSelectedTaps, setRegSelectedTaps] = useState(5);
+  const [regShapeSequence, setRegShapeSequence] = useState<string[]>([]);
   const [regError, setRegError] = useState('');
 
   // Lock Screen & Shape Challenge State
   const [enteredPassword, setEnteredPassword] = useState('');
   const [lockError, setLockError] = useState('');
   const [isPasswordPassed, setIsPasswordPassed] = useState(false);
-  const [shapeTapCount, setShapeTapCount] = useState(0);
+  const [enteredShapeSequence, setEnteredShapeSequence] = useState<string[]>([]);
   const [shapeRotations, setShapeRotations] = useState<Record<string, number>>({});
 
   // Settings State
@@ -512,15 +520,17 @@ export default function App() {
       setRegError('Passcodes do not match.');
       return;
     }
+    if (regShapeSequence.length < 2) {
+      setRegError('Please tap at least 2 shapes below to create your secret entry pattern.');
+      return;
+    }
 
     localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, regPassword);
     localStorage.setItem(IS_REGISTERED_STORAGE_KEY, 'true');
-    localStorage.setItem(TARGET_SHAPE_STORAGE_KEY, regSelectedShape);
-    localStorage.setItem(TARGET_TAPS_STORAGE_KEY, regSelectedTaps.toString());
+    localStorage.setItem(TARGET_SEQUENCE_STORAGE_KEY, JSON.stringify(regShapeSequence));
 
     setMasterPassword(regPassword);
-    setTargetShapeId(regSelectedShape);
-    setTargetTapRequired(regSelectedTaps);
+    setTargetShapeSequence(regShapeSequence);
     setIsRegistered(true);
     setIsUnlocked(true);
   };
@@ -537,7 +547,7 @@ export default function App() {
     setMasterPassword(enteredPassword);
     setIsPasswordPassed(true);
     setEnteredPassword('');
-    setShapeTapCount(0);
+    setEnteredShapeSequence([]);
   };
 
   // Shape Tap Handler for Stealth Lock Screen
@@ -547,17 +557,23 @@ export default function App() {
       [shapeId]: (prev[shapeId] || 0) + 360
     }));
 
-    if (shapeId === targetShapeId) {
-      const nextCount = shapeTapCount + 1;
-      setShapeTapCount(nextCount);
+    const nextEntered = [...enteredShapeSequence, shapeId];
+    const expectedShape = targetShapeSequence[enteredShapeSequence.length];
 
-      if (nextCount >= targetTapRequired) {
+    if (shapeId === expectedShape) {
+      setEnteredShapeSequence(nextEntered);
+
+      if (nextEntered.length === targetShapeSequence.length) {
         setIsUnlocked(true);
         setIsPasswordPassed(false);
-        setShapeTapCount(0);
+        setEnteredShapeSequence([]);
       }
     } else {
-      setShapeTapCount(0);
+      if (shapeId === targetShapeSequence[0]) {
+        setEnteredShapeSequence([shapeId]);
+      } else {
+        setEnteredShapeSequence([]);
+      }
     }
   };
 
@@ -575,8 +591,10 @@ export default function App() {
       setNewPasswordInput('');
     }
 
-    localStorage.setItem(TARGET_SHAPE_STORAGE_KEY, targetShapeId);
-    localStorage.setItem(TARGET_TAPS_STORAGE_KEY, targetTapRequired.toString());
+    if (regShapeSequence.length >= 2) {
+      localStorage.setItem(TARGET_SEQUENCE_STORAGE_KEY, JSON.stringify(regShapeSequence));
+      setTargetShapeSequence(regShapeSequence);
+    }
 
     setIsPasswordSavedFeedback(true);
     setTimeout(() => {
@@ -983,20 +1001,53 @@ export default function App() {
             </div>
 
             <div className="w-full text-left mt-1">
-              <label className="text-xs font-medium text-zinc-400 block mb-1.5">
-                Secret Verification Shape:
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-zinc-300">
+                  Secret Shape Combination:
+                </label>
+                {regShapeSequence.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setRegShapeSequence([])}
+                    className="text-[10px] text-[#F59E0B] hover:underline flex items-center gap-1 font-medium"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Reset
+                  </button>
+                )}
+              </div>
+
+              {/* DEMO SEQUENCE PREVIEW BAR */}
+              <div className="bg-[#08080A] border border-[#27272A] rounded-xl p-2 mb-2.5 min-h-[44px] flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                {regShapeSequence.length === 0 ? (
+                  <span className="text-[11px] text-zinc-500 italic px-1">
+                    Tap shapes below to demo your secret entry combination pattern (min 2)...
+                  </span>
+                ) : (
+                  regShapeSequence.map((shapeId, idx) => {
+                    const shapeDef = AVAILABLE_SHAPES.find((s) => s.id === shapeId);
+                    if (!shapeDef) return null;
+                    return (
+                      <div
+                        key={idx}
+                        className="bg-[#111216] border border-[#F59E0B]/50 px-2 py-1 rounded-lg flex items-center gap-1.5 shrink-0 shadow-sm"
+                      >
+                        <span className="text-[9px] font-bold text-[#F59E0B]">{idx + 1}.</span>
+                        <ShapeIcon shape={shapeDef.shape} color={shapeDef.color} className="w-4 h-4" />
+                        <span className="text-[10px] font-medium text-white">{shapeDef.label.split(' ')[0]}</span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* SHAPE SELECTION GRID */}
               <div className="grid grid-cols-4 gap-2 bg-[#08080A] p-2.5 rounded-xl border border-[#27272A]">
                 {AVAILABLE_SHAPES.map((s) => (
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => setRegSelectedShape(s.id)}
-                    className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
-                      regSelectedShape === s.id
-                        ? 'border-[#F59E0B] bg-[#F59E0B]/20 scale-105 shadow-md shadow-[#F59E0B]/20'
-                        : 'border-[#27272A] hover:border-zinc-700 bg-[#111216]'
-                    }`}
+                    onClick={() => setRegShapeSequence((prev) => [...prev, s.id])}
+                    className="flex flex-col items-center justify-center p-2 rounded-lg border border-[#27272A] hover:border-[#F59E0B] bg-[#111216] active:scale-95 transition-all"
                   >
                     <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
                     <span className="text-[9px] text-zinc-400 mt-1 truncate max-w-full leading-tight">
@@ -1004,48 +1055,6 @@ export default function App() {
                     </span>
                   </button>
                 ))}
-              </div>
-            </div>
-
-            <div className="w-full text-left">
-              <label className="text-xs font-medium text-zinc-400 block mb-1.5">
-                Required Consecutive Taps:
-              </label>
-              <div className="flex items-center gap-1.5">
-                {[3, 4, 5, 6, 7].map((num) => (
-                  <button
-                    key={num}
-                    type="button"
-                    onClick={() => setRegSelectedTaps(num)}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
-                      regSelectedTaps === num
-                        ? 'bg-[#F59E0B] text-black border-[#F59E0B] shadow-md shadow-[#F59E0B]/20'
-                        : 'bg-[#08080A] text-zinc-400 border-[#27272A] hover:text-white'
-                    }`}
-                  >
-                    {num}×
-                  </button>
-                ))}
-                <div className="relative flex-1">
-                  <input
-                    type="number"
-                    min="1"
-                    max="99"
-                    placeholder="Custom"
-                    value={![3, 4, 5, 6, 7].includes(regSelectedTaps) ? regSelectedTaps : ''}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value, 10);
-                      if (!isNaN(val) && val > 0) {
-                        setRegSelectedTaps(val);
-                      }
-                    }}
-                    className={`w-full py-2 px-1 rounded-xl text-xs font-bold text-center border bg-[#08080A] focus:outline-none transition-all ${
-                      ![3, 4, 5, 6, 7].includes(regSelectedTaps)
-                        ? 'bg-[#F59E0B]/20 text-[#F59E0B] border-[#F59E0B] shadow-md'
-                        : 'text-zinc-400 border-[#27272A] focus:border-[#F59E0B] focus:text-white'
-                    }`}
-                  />
-                </div>
               </div>
             </div>
 
@@ -1824,69 +1833,52 @@ export default function App() {
                           </div>
 
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-zinc-400">
-                              Select Secret Verification Shape:
-                            </label>
-                            <div className="grid grid-cols-4 gap-2 bg-[#08080A] p-2.5 rounded-xl border border-[#27272A]">
+                            <div className="flex items-center justify-between">
+                              <label className="text-[11px] font-semibold text-zinc-400">
+                                Update Shape Combination Pattern:
+                              </label>
+                              {regShapeSequence.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setRegShapeSequence([])}
+                                  className="text-[10px] text-[#F59E0B] hover:underline flex items-center gap-1 font-medium"
+                                >
+                                  <RotateCcw className="w-3 h-3" /> Clear
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="bg-[#111216] border border-[#27272A] rounded-xl p-2 min-h-[40px] flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                              {(regShapeSequence.length > 0 ? regShapeSequence : targetShapeSequence).map((shapeId, idx) => {
+                                const shapeDef = AVAILABLE_SHAPES.find((s) => s.id === shapeId);
+                                if (!shapeDef) return null;
+                                return (
+                                  <div
+                                    key={idx}
+                                    className="bg-[#08080A] border border-[#F59E0B]/50 px-2 py-0.5 rounded-lg flex items-center gap-1 shrink-0"
+                                  >
+                                    <span className="text-[9px] font-bold text-[#F59E0B]">{idx + 1}.</span>
+                                    <ShapeIcon shape={shapeDef.shape} color={shapeDef.color} className="w-3.5 h-3.5" />
+                                    <span className="text-[10px] text-white">{shapeDef.label.split(' ')[0]}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            <div className="grid grid-cols-4 gap-1.5 bg-[#111216] p-2 rounded-xl border border-[#27272A]">
                               {AVAILABLE_SHAPES.map((s) => (
                                 <button
                                   key={s.id}
                                   type="button"
-                                  onClick={() => setTargetShapeId(s.id)}
-                                  className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
-                                    targetShapeId === s.id
-                                      ? 'border-[#F59E0B] bg-[#F59E0B]/20 scale-105 shadow-md shadow-[#F59E0B]/20'
-                                      : 'border-[#27272A] hover:border-zinc-700 bg-[#111216]'
-                                  }`}
+                                  onClick={() => setRegShapeSequence((prev) => [...prev, s.id])}
+                                  className="flex flex-col items-center justify-center p-1.5 rounded-lg border border-[#27272A] hover:border-[#F59E0B] bg-[#08080A] active:scale-95 transition-all"
                                 >
-                                  <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
-                                  <span className="text-[9px] text-zinc-400 mt-1 truncate max-w-full leading-tight">
+                                  <ShapeIcon shape={s.shape} color={s.color} className="w-5 h-5" />
+                                  <span className="text-[8px] text-zinc-400 mt-0.5 truncate max-w-full">
                                     {s.label.split(' ')[0]}
                                   </span>
                                 </button>
                               ))}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-zinc-400">
-                              Required Consecutive Taps:
-                            </label>
-                            <div className="flex items-center gap-1.5">
-                              {[3, 4, 5, 6, 7].map((num) => (
-                                <button
-                                  key={num}
-                                  type="button"
-                                  onClick={() => setTargetTapRequired(num)}
-                                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
-                                    targetTapRequired === num
-                                      ? 'bg-[#F59E0B] text-black border-[#F59E0B] shadow-md shadow-[#F59E0B]/20'
-                                      : 'bg-[#111216] text-zinc-400 border-[#27272A] hover:text-white'
-                                  }`}
-                                >
-                                  {num}×
-                                </button>
-                              ))}
-                              <div className="relative flex-1">
-                                <input
-                                  type="number"
-                                  min="1"
-                                  max="99"
-                                  placeholder="Custom"
-                                  value={![3, 4, 5, 6, 7].includes(targetTapRequired) ? targetTapRequired : ''}
-                                  onChange={(e) => {
-                                    const val = parseInt(e.target.value, 10);
-                                    if (!isNaN(val) && val > 0) {
-                                      setTargetTapRequired(val);
-                                    }
-                                  }}
-                                  className={`w-full py-2 px-1 rounded-xl text-xs font-bold text-center border bg-[#111216] focus:outline-none transition-all ${
-                                    ![3, 4, 5, 6, 7].includes(targetTapRequired)
-                                      ? 'bg-[#F59E0B]/20 text-[#F59E0B] border-[#F59E0B] shadow-md'
-                                      : 'text-zinc-400 border-[#27272A] focus:border-[#F59E0B] focus:text-white'
-                                  }`}
-                                />
-                              </div>
                             </div>
                           </div>
 
