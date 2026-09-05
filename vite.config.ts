@@ -3,25 +3,17 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true
-      }
-    }
-  },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['logo.png', 'icon-192.png', 'icon-512.png', 'favicon.png'],
       manifest: {
-        name: 'Secure Vault Notes',
-        short_name: 'SecureVault',
+        name: 'GNOTED',
+        short_name: 'GNOTED',
         description: 'Zero-Knowledge Encrypted Notes & Passwords Vault',
-        theme_color: '#000000',
-        background_color: '#000000',
+        theme_color: '#08080A',
+        background_color: '#08080A',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
