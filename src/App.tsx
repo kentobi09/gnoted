@@ -1124,15 +1124,6 @@ export default function App() {
           >
             <Settings className="w-4 h-4" />
           </button>
-          <button 
-            onClick={() => {
-              setIsUnlocked(false);
-            }}
-            className="w-9 h-9 rounded-full bg-[#111216] border border-[#27272A] flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
-            title="Lock App"
-          >
-            <Lock className="w-4 h-4" />
-          </button>
         </div>
       </header>
 
