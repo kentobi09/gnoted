@@ -360,23 +360,30 @@ export default function App() {
     };
   }, []);
 
-  const handleChangeMasterPassword = () => {
-    if (!newPasswordInput.trim()) {
-      setPasswordChangeStatus('Please enter a new Vault Password.');
-      return;
+  const handleSaveSecuritySettings = () => {
+    let passwordUpdated = false;
+    if (newPasswordInput.trim()) {
+      if (newPasswordInput.trim().length < 4) {
+        setPasswordChangeStatus('Password must be at least 4 characters.');
+        return;
+      }
+      localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, newPasswordInput.trim());
+      setMasterPassword(newPasswordInput.trim());
+      setNewPasswordInput('');
+      passwordUpdated = true;
     }
-    localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, newPasswordInput.trim());
-    setMasterPassword(newPasswordInput.trim());
 
-    setNewPasswordInput('');
-    setIsEditingPassword(false);
+    localStorage.setItem(TARGET_SHAPE_STORAGE_KEY, targetShapeId);
+    localStorage.setItem(TARGET_TAPS_STORAGE_KEY, targetTapRequired.toString());
+
     setIsPasswordSavedFeedback(true);
-    setPasswordChangeStatus('Vault Password updated successfully ✓');
+    setPasswordChangeStatus(passwordUpdated ? 'Password & Secret Shape updated ✓' : 'Security Shape settings saved ✓');
 
     setTimeout(() => {
       setIsPasswordSavedFeedback(false);
       setPasswordChangeStatus('');
-    }, 3000);
+      setIsEditingPassword(false);
+    }, 2000);
   };
 
   const handleResetAccount = () => {
@@ -1617,11 +1624,12 @@ export default function App() {
 
               {!showHistoryView ? (
                 <div className="flex flex-col gap-3">
-                  <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-2.5">
+                  {/* MERGED SECURITY & STEALTH SHAPE LOCK CARD */}
+                  <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-white flex items-center gap-1.5">
                         <KeyRound className="w-4 h-4 text-[#FF6B00]" />
-                        Vault Password Security
+                        Vault Security & Stealth Shape Lock
                       </label>
                       <button
                         onClick={() => setIsEditingPassword(!isEditingPassword)}
@@ -1630,31 +1638,105 @@ export default function App() {
                             ? 'bg-[#FF6B00] text-white' 
                             : 'bg-[#1C1C1E] border border-[#2C2C2E] text-[#8E8E93] hover:text-white'
                         }`}
-                        title="Edit Account Details"
+                        title={isEditingPassword ? 'Collapse Settings' : 'Edit Security Settings'}
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                     </div>
 
-                    {passwordChangeStatus && (
-                      <span className="text-[11px] text-[#34C759] font-medium">
-                        {passwordChangeStatus}
-                      </span>
-                    )}
+                    {/* COLLAPSED SUMMARY VIEW */}
+                    {!isEditingPassword && (() => {
+                      const currentShapeObj = AVAILABLE_SHAPES.find(s => s.id === targetShapeId) || AVAILABLE_SHAPES[4];
+                      return (
+                        <div className="flex items-center justify-between bg-[#141416] p-2.5 rounded-xl border border-[#2C2C2E]">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-lg bg-[#1C1C1E] border border-[#2C2C2E] flex items-center justify-center p-1.5 shrink-0">
+                              <ShapeIcon shape={currentShapeObj.shape} color={currentShapeObj.color} className="w-full h-full" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-semibold text-white">{currentShapeObj.label}</span>
+                              <span className="text-[10px] text-[#8E8E93]">{targetTapRequired}× Consecutive Taps Required</span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-semibold text-[#34C759] bg-[#34C759]/15 border border-[#34C759]/30 px-2 py-0.5 rounded-full">
+                            Active Lock ✓
+                          </span>
+                        </div>
+                      );
+                    })()}
 
+                    {/* EXPANDED EDIT DETAILS FORM */}
                     {isEditingPassword && (
-                      <div className="flex flex-col gap-2">
-                        <input
-                          type="password"
-                          placeholder="New Vault Password"
-                          value={newPasswordInput}
-                          onChange={(e) => setNewPasswordInput(e.target.value)}
-                          className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
-                        />
+                      <div className="flex flex-col gap-3 pt-1 border-t border-[#2C2C2E]">
+                        {passwordChangeStatus && (
+                          <span className={`text-[11px] font-medium ${passwordChangeStatus.includes('must be') ? 'text-[#FF3B30]' : 'text-[#34C759]'}`}>
+                            {passwordChangeStatus}
+                          </span>
+                        )}
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold text-[#8E8E93]">
+                            Update Vault Password (Optional):
+                          </label>
+                          <input
+                            type="password"
+                            placeholder="Enter new password (or leave blank to keep current)"
+                            value={newPasswordInput}
+                            onChange={(e) => setNewPasswordInput(e.target.value)}
+                            className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold text-[#8E8E93]">
+                            Select Secret Verification Shape:
+                          </label>
+                          <div className="grid grid-cols-4 gap-2 bg-[#141416] p-2.5 rounded-xl border border-[#2C2C2E]">
+                            {AVAILABLE_SHAPES.map((s) => (
+                              <button
+                                key={s.id}
+                                type="button"
+                                onClick={() => setTargetShapeId(s.id)}
+                                className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
+                                  targetShapeId === s.id
+                                    ? 'border-[#FF6B00] bg-[#FF6B00]/20 scale-105 shadow-md'
+                                    : 'border-[#2C2C2E] hover:border-gray-600 bg-[#1C1C1E]'
+                                }`}
+                              >
+                                <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
+                                <span className="text-[9px] text-[#8E8E93] mt-1 truncate max-w-full leading-tight">
+                                  {s.label.split(' ')[0]}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-semibold text-[#8E8E93]">
+                            Required Consecutive Taps:
+                          </label>
+                          <div className="flex items-center gap-1.5">
+                            {[3, 4, 5, 6, 7].map((num) => (
+                              <button
+                                key={num}
+                                type="button"
+                                onClick={() => setTargetTapRequired(num)}
+                                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
+                                  targetTapRequired === num
+                                    ? 'bg-[#FF6B00] text-white border-[#FF6B00] shadow-md'
+                                    : 'bg-[#1C1C1E] text-[#8E8E93] border-[#2C2C2E] hover:text-white'
+                                }`}
+                              >
+                                {num}×
+                              </button>
+                            ))}
+                          </div>
+                        </div>
 
                         <button
-                          onClick={handleChangeMasterPassword}
-                          className={`w-full py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
+                          onClick={handleSaveSecuritySettings}
+                          className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 mt-1 ${
                             isPasswordSavedFeedback
                               ? 'bg-[#34C759] text-white'
                               : 'bg-[#FF6B00] hover:bg-[#E66000] text-white active:scale-95'
@@ -1663,78 +1745,14 @@ export default function App() {
                           {isPasswordSavedFeedback ? (
                             <>
                               <Check className="w-3.5 h-3.5 stroke-[3]" />
-                              Updated ✓
+                              Saved ✓
                             </>
                           ) : (
-                            'Save Account Updates'
+                            'Save Security Settings'
                           )}
                         </button>
                       </div>
                     )}
-                  </div>
-
-                  <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
-                    <label className="text-xs font-semibold text-[#FF6B00] flex items-center gap-1.5">
-                      <KeyRound className="w-4 h-4 text-[#FF6B00]" />
-                      Stealth Verification Shape Lock
-                    </label>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-semibold text-[#8E8E93]">
-                        Secret Verification Shape:
-                      </label>
-                      <div className="grid grid-cols-4 gap-2 bg-[#141416] p-2.5 rounded-xl border border-[#2C2C2E]">
-                        {AVAILABLE_SHAPES.map((s) => (
-                          <button
-                            key={s.id}
-                            type="button"
-                            onClick={() => {
-                              setTargetShapeId(s.id);
-                              localStorage.setItem(TARGET_SHAPE_STORAGE_KEY, s.id);
-                              setActiveToastAlert(`Secret shape set to ${s.label}!`);
-                              setTimeout(() => setActiveToastAlert(''), 3000);
-                            }}
-                            className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
-                              targetShapeId === s.id
-                                ? 'border-[#FF6B00] bg-[#FF6B00]/20 scale-105 shadow-md'
-                                : 'border-[#2C2C2E] hover:border-gray-600 bg-[#1C1C1E]'
-                            }`}
-                          >
-                            <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
-                            <span className="text-[9px] text-[#8E8E93] mt-1 truncate max-w-full leading-tight">
-                              {s.label.split(' ')[0]}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-semibold text-[#8E8E93]">
-                        Required Consecutive Taps:
-                      </label>
-                      <div className="flex items-center gap-1.5">
-                        {[3, 4, 5, 6, 7].map((num) => (
-                          <button
-                            key={num}
-                            type="button"
-                            onClick={() => {
-                              setTargetTapRequired(num);
-                              localStorage.setItem(TARGET_TAPS_STORAGE_KEY, num.toString());
-                              setActiveToastAlert(`Required taps set to ${num}!`);
-                              setTimeout(() => setActiveToastAlert(''), 3000);
-                            }}
-                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
-                              targetTapRequired === num
-                                ? 'bg-[#FF6B00] text-white border-[#FF6B00] shadow-md'
-                                : 'bg-[#1C1C1E] text-[#8E8E93] border-[#2C2C2E] hover:text-white'
-                            }`}
-                          >
-                            {num}×
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                   </div>
 
                   <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
