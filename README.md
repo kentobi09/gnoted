@@ -1,8 +1,18 @@
-# GNOTED
+<p align="center">
+  <img src="public/logo.png" alt="GNOTED Logo" width="128" height="128" />
+</p>
 
-[![Download GNOTED Android APK](https://img.shields.io/badge/Download-GNOTED_Android_APK-F59E0B?style=for-the-badge&logo=android&logoColor=black)](https://github.com/kentobi09/gnoted/raw/main/GNOTED.apk)
+<h1 align="center">GNOTED</h1>
 
-Direct Link: [**Download GNOTED.apk (Direct)**](https://github.com/kentobi09/gnoted/raw/main/GNOTED.apk)
+<p align="center">
+  <a href="https://github.com/kentobi09/gnoted/raw/main/GNOTED.apk">
+    <img src="https://img.shields.io/badge/Download-GNOTED_Android_APK-F59E0B?style=for-the-badge&logo=android&logoColor=black" alt="Download GNOTED Android APK" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/kentobi09/gnoted/raw/main/GNOTED.apk"><b>Download GNOTED.apk (Direct Link)</b></a>
+</p>
 
 ---
 
