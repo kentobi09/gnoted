@@ -1284,7 +1284,7 @@ export default function App() {
                   year: 'numeric',
                   hour: '2-digit',
                   minute: '2-digit'
-                })} • <span className="text-[#F59E0B]">Swipe left to close</span>
+                })}
               </p>
 
               <textarea
