@@ -134,6 +134,50 @@ function ShapeIcon({ shape, color, className = "w-6 h-6" }: { shape: string; col
   );
 }
 
+function ToastNotificationBanner({ 
+  message, 
+  onClose 
+}: { 
+  message: string; 
+  onClose: () => void 
+}) {
+  return (
+    <AnimatePresence>
+      {message && (
+        <motion.div
+          initial={{ opacity: 0, y: -30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -30, scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.8}
+          onDragEnd={(_, info) => {
+            if (Math.abs(info.offset.x) > 60 || Math.abs(info.velocity.x) > 250) {
+              onClose();
+            }
+          }}
+          className="fixed top-4 left-4 right-4 max-w-md mx-auto z-[9999] pointer-events-auto touch-pan-x cursor-grab active:cursor-grabbing select-none"
+        >
+          <div className="bg-[#FF6B00] text-white p-3.5 px-4 rounded-2xl shadow-2xl flex items-center justify-between border border-white/25 backdrop-blur-md">
+            <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
+              <BellRing className="w-5 h-5 shrink-0 text-white" />
+              <p className="text-xs font-semibold leading-snug break-words text-white">{message}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-white/80 hover:text-white p-1.5 rounded-full hover:bg-white/20 shrink-0 transition-colors"
+              title="Dismiss notification"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 export default function App() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [activeNavTab, setActiveNavTab] = useState<'notes' | 'todos'>('notes');
@@ -822,31 +866,11 @@ export default function App() {
   if (!isRegistered) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
-        {/* DISMISSABLE TOAST NOTIFICATION BANNER */}
-        <AnimatePresence>
-          {activeToastAlert && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-auto"
-            >
-              <div className="bg-[#FF6B00] text-white p-3.5 rounded-card shadow-2xl flex items-center justify-between border border-white/20">
-                <div className="flex items-center gap-3 flex-1 pr-2">
-                  <BellRing className="w-5 h-5 shrink-0" />
-                  <p className="text-xs font-semibold leading-tight">{activeToastAlert}</p>
-                </div>
-                <button
-                  onClick={() => setActiveToastAlert('')}
-                  className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0"
-                  title="Dismiss notification"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
+        <ToastNotificationBanner 
+          message={activeToastAlert} 
+          onClose={() => setActiveToastAlert('')} 
+        />
 
         <div className="w-full max-w-sm bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
           <div className="w-14 h-14 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-4 border border-[#FF6B00]/30">
@@ -979,31 +1003,11 @@ export default function App() {
 
     return (
       <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-[#090a0f] via-[#040407] to-[#000000] overflow-hidden select-none z-50 font-sans">
-        {/* DISMISSABLE TOAST NOTIFICATION BANNER */}
-        <AnimatePresence>
-          {activeToastAlert && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-auto"
-            >
-              <div className="bg-[#FF6B00] text-white p-3.5 rounded-card shadow-2xl flex items-center justify-between border border-white/20">
-                <div className="flex items-center gap-3 flex-1 pr-2">
-                  <BellRing className="w-5 h-5 shrink-0" />
-                  <p className="text-xs font-semibold leading-tight">{activeToastAlert}</p>
-                </div>
-                <button
-                  onClick={() => setActiveToastAlert('')}
-                  className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0"
-                  title="Dismiss notification"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
+        <ToastNotificationBanner 
+          message={activeToastAlert} 
+          onClose={() => setActiveToastAlert('')} 
+        />
 
         {/* ASYMMETRICAL WALLPAPER SHAPES */}
         <div className="relative w-full h-full max-w-md mx-auto">
@@ -1035,31 +1039,11 @@ export default function App() {
   if (!isUnlocked && !isPasswordPassed) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
-        {/* DISMISSABLE TOAST NOTIFICATION BANNER */}
-        <AnimatePresence>
-          {activeToastAlert && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-auto"
-            >
-              <div className="bg-[#FF6B00] text-white p-3.5 rounded-card shadow-2xl flex items-center justify-between border border-white/20">
-                <div className="flex items-center gap-3 flex-1 pr-2">
-                  <BellRing className="w-5 h-5 shrink-0" />
-                  <p className="text-xs font-semibold leading-tight">{activeToastAlert}</p>
-                </div>
-                <button
-                  onClick={() => setActiveToastAlert('')}
-                  className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0"
-                  title="Dismiss notification"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
+        <ToastNotificationBanner 
+          message={activeToastAlert} 
+          onClose={() => setActiveToastAlert('')} 
+        />
 
         <div className="w-full max-w-sm bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
           <div className="w-14 h-14 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-4 border border-[#FF6B00]/30">
@@ -1172,31 +1156,11 @@ export default function App() {
   // MAIN DASHBOARD
   return (
     <div className="min-h-screen bg-black text-white p-4 max-w-md mx-auto pb-32 font-sans relative">
-      {/* DISMISSABLE TOAST NOTIFICATION BANNER */}
-      <AnimatePresence>
-        {activeToastAlert && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-auto"
-          >
-            <div className="bg-[#FF6B00] text-white p-3.5 rounded-card shadow-2xl flex items-center justify-between border border-white/20">
-              <div className="flex items-center gap-3 flex-1 pr-2">
-                <BellRing className="w-5 h-5 shrink-0" />
-                <p className="text-xs font-semibold leading-tight">{activeToastAlert}</p>
-              </div>
-              <button
-                onClick={() => setActiveToastAlert('')}
-                className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0"
-                title="Dismiss notification"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
+      <ToastNotificationBanner 
+        message={activeToastAlert} 
+        onClose={() => setActiveToastAlert('')} 
+      />
 
       <header className="flex items-center justify-between pt-2 pb-4">
         <div className="flex items-center gap-3">
