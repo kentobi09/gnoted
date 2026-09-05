@@ -525,13 +525,16 @@ export default function App() {
       const encryptedTitle = await encryptText(editingNote.title || 'Untitled Note');
       const encryptedContent = await encryptText(editingNote.content || '');
 
+      const categoryTag = editingNote.categoryTag || 'Personal';
+      const isSensitive = categoryTag === 'Passwords' || categoryTag === 'Private Keys';
+
       const row: EncryptedNoteRow = {
         encryptedTitle: encryptedTitle.ciphertextBase64,
         titleIv: encryptedTitle.ivBase64,
         encryptedContent: encryptedContent.ciphertextBase64,
         contentIv: encryptedContent.ivBase64,
-        categoryTag: editingNote.categoryTag || 'Personal',
-        isSensitive: editingNote.isSensitive || false,
+        categoryTag,
+        isSensitive,
         isArchived: editingNote.isArchived || false,
         createdAt: editingNote.createdAt || Date.now(),
         updatedAt: Date.now()
@@ -1308,7 +1311,13 @@ export default function App() {
             <button
               onClick={() => {
                 setSaveError('');
-                setEditingNote({ title: '', content: '', categoryTag: selectedTag, isSensitive: false });
+                const initTag = selectedTag || 'Personal';
+                setEditingNote({ 
+                  title: '', 
+                  content: '', 
+                  categoryTag: initTag, 
+                  isSensitive: initTag === 'Passwords' || initTag === 'Private Keys' 
+                });
                 setIsEditorOpen(true);
               }}
               className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-3.5 rounded-pill shadow-lg flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-all"
@@ -1534,43 +1543,24 @@ export default function App() {
                 className="w-full bg-black border border-[#2C2C2E] rounded-xl p-3.5 text-sm text-white placeholder-[#636366] mb-3 focus:outline-none focus:border-[#FF6B00] resize-none"
               />
 
-              <div className="flex items-center justify-between mb-3">
-                <select
-                  value={editingNote.categoryTag}
-                  onChange={(e) => setEditingNote({ ...editingNote, categoryTag: e.target.value })}
-                  className="bg-black border border-[#2C2C2E] text-xs text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#FF6B00]"
-                >
-                  <option value="Personal">Personal</option>
-                  <option value="Passwords">Passwords</option>
-                  <option value="Private Keys">Private Keys</option>
-                </select>
-
-                <label className="flex items-center gap-2 cursor-pointer text-xs text-[#8E8E93]">
-                  <input
-                    type="checkbox"
-                    checked={editingNote.isSensitive}
-                    onChange={(e) => setEditingNote({ ...editingNote, isSensitive: e.target.checked })}
-                    className="accent-[#FF6B00] w-4 h-4 rounded"
-                  />
-                  Mask as Sensitive
+              <div className="mb-4">
+                <label className="text-[11px] font-semibold text-[#8E8E93] block mb-1">
+                  Category Tag:
                 </label>
+                <select
+                  value={editingNote.categoryTag || 'Personal'}
+                  onChange={(e) => setEditingNote({ 
+                    ...editingNote, 
+                    categoryTag: e.target.value,
+                    isSensitive: e.target.value === 'Passwords' || e.target.value === 'Private Keys'
+                  })}
+                  className="w-full bg-black border border-[#2C2C2E] text-xs text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-[#FF6B00]"
+                >
+                  <option value="Personal">Personal (Visible)</option>
+                  <option value="Passwords">Passwords (Auto-Sensitive)</option>
+                  <option value="Private Keys">Private Keys (Auto-Sensitive)</option>
+                </select>
               </div>
-
-              {editingNote.categoryTag === 'Passwords' && (
-                <div className="mb-4 pt-2 border-t border-[#2C2C2E]">
-                  <label className="text-[11px] font-semibold text-[#FF6B00] flex items-center gap-1.5 mb-1.5">
-                    <Link className="w-3.5 h-3.5" />
-                    Optional GDrive Folder Link
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="https://drive.google.com/drive/folders/..."
-                    value={gdriveLinkInput}
-                    onChange={(e) => setGdriveLinkInput(e.target.value)}
-                    className="w-full bg-black border border-[#2C2C2E] rounded-xl px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
-                  />
-                </div>
-              )}
 
               <div className="flex items-center gap-2">
                 <button
@@ -1626,232 +1616,256 @@ export default function App() {
               )}
 
               {!showHistoryView ? (
-                <div className="flex flex-col gap-3">
-                  {/* MERGED SECURITY & STEALTH SHAPE LOCK CARD */}
-                  <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-white flex items-center gap-1.5">
-                        <KeyRound className="w-4 h-4 text-[#FF6B00]" />
-                        GNOTED Security & Verification
-                      </label>
-                      <button
-                        onClick={() => setIsEditingPassword(!isEditingPassword)}
-                        className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-                          isEditingPassword 
-                            ? 'bg-[#FF6B00] text-white' 
-                            : 'bg-[#1C1C1E] border border-[#2C2C2E] text-[#8E8E93] hover:text-white'
-                        }`}
-                        title={isEditingPassword ? 'Collapse Settings' : 'Edit Security Settings'}
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    {/* EXPANDED EDIT DETAILS FORM */}
-                    {isEditingPassword && (
-                      <div className="flex flex-col gap-3 pt-1 border-t border-[#2C2C2E]">
-                        {passwordChangeStatus && (
-                          <span className={`text-[11px] font-medium ${passwordChangeStatus.includes('must be') ? 'text-[#FF3B30]' : 'text-[#34C759]'}`}>
-                            {passwordChangeStatus}
-                          </span>
-                        )}
-
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-semibold text-[#8E8E93]">
-                            Update Passcode (Optional):
-                          </label>
-                          <input
-                            type="password"
-                            placeholder="New passcode (optional)"
-                            value={newPasswordInput}
-                            onChange={(e) => setNewPasswordInput(e.target.value)}
-                            className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-semibold text-[#8E8E93]">
-                            Select Secret Verification Shape:
-                          </label>
-                          <div className="grid grid-cols-4 gap-2 bg-[#141416] p-2.5 rounded-xl border border-[#2C2C2E]">
-                            {AVAILABLE_SHAPES.map((s) => (
-                              <button
-                                key={s.id}
-                                type="button"
-                                onClick={() => setTargetShapeId(s.id)}
-                                className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
-                                  targetShapeId === s.id
-                                    ? 'border-[#FF6B00] bg-[#FF6B00]/20 scale-105 shadow-md'
-                                    : 'border-[#2C2C2E] hover:border-gray-600 bg-[#1C1C1E]'
-                                }`}
-                              >
-                                <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
-                                <span className="text-[9px] text-[#8E8E93] mt-1 truncate max-w-full leading-tight">
-                                  {s.label.split(' ')[0]}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-semibold text-[#8E8E93]">
-                            Required Consecutive Taps:
-                          </label>
-                          <div className="flex items-center gap-1.5">
-                            {[3, 4, 5, 6, 7].map((num) => (
-                              <button
-                                key={num}
-                                type="button"
-                                onClick={() => setTargetTapRequired(num)}
-                                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
-                                  targetTapRequired === num
-                                    ? 'bg-[#FF6B00] text-white border-[#FF6B00] shadow-md'
-                                    : 'bg-[#1C1C1E] text-[#8E8E93] border-[#2C2C2E] hover:text-white'
-                                }`}
-                              >
-                                {num}×
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
+                <div className="flex flex-col gap-4">
+                  {/* SECTION 1: SECURITY & PASSCODE */}
+                  <div>
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#8E8E93] mb-1.5 px-0.5">
+                      Security & Passcode
+                    </h3>
+                    <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-white flex items-center gap-1.5">
+                          <KeyRound className="w-4 h-4 text-[#FF6B00]" />
+                          GNOTED Security & Verification
+                        </label>
                         <button
-                          onClick={handleSaveSecuritySettings}
-                          className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 mt-1 ${
-                            isPasswordSavedFeedback
-                              ? 'bg-[#34C759] text-white'
-                              : 'bg-[#FF6B00] hover:bg-[#E66000] text-white active:scale-95'
+                          onClick={() => setIsEditingPassword(!isEditingPassword)}
+                          className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                            isEditingPassword 
+                              ? 'bg-[#FF6B00] text-white' 
+                              : 'bg-[#1C1C1E] border border-[#2C2C2E] text-[#8E8E93] hover:text-white'
                           }`}
+                          title={isEditingPassword ? 'Collapse Settings' : 'Edit Security Settings'}
                         >
-                          {isPasswordSavedFeedback ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 stroke-[3]" />
-                              Saved ✓
-                            </>
-                          ) : (
-                            'Save Security Settings'
-                          )}
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                    )}
+
+                      {/* EXPANDED EDIT DETAILS FORM */}
+                      {isEditingPassword && (
+                        <div className="flex flex-col gap-3 pt-2.5 border-t border-[#2C2C2E]">
+                          {passwordChangeStatus && (
+                            <span className={`text-[11px] font-medium ${passwordChangeStatus.includes('must be') ? 'text-[#FF3B30]' : 'text-[#34C759]'}`}>
+                              {passwordChangeStatus}
+                            </span>
+                          )}
+
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold text-[#8E8E93]">
+                              Update Passcode (Optional):
+                            </label>
+                            <input
+                              type="password"
+                              placeholder="New passcode (optional)"
+                              value={newPasswordInput}
+                              onChange={(e) => setNewPasswordInput(e.target.value)}
+                              className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold text-[#8E8E93]">
+                              Select Secret Verification Shape:
+                            </label>
+                            <div className="grid grid-cols-4 gap-2 bg-[#141416] p-2.5 rounded-xl border border-[#2C2C2E]">
+                              {AVAILABLE_SHAPES.map((s) => (
+                                <button
+                                  key={s.id}
+                                  type="button"
+                                  onClick={() => setTargetShapeId(s.id)}
+                                  className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
+                                    targetShapeId === s.id
+                                      ? 'border-[#FF6B00] bg-[#FF6B00]/20 scale-105 shadow-md'
+                                      : 'border-[#2C2C2E] hover:border-gray-600 bg-[#1C1C1E]'
+                                  }`}
+                                >
+                                  <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
+                                  <span className="text-[9px] text-[#8E8E93] mt-1 truncate max-w-full leading-tight">
+                                    {s.label.split(' ')[0]}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold text-[#8E8E93]">
+                              Required Consecutive Taps:
+                            </label>
+                            <div className="flex items-center gap-1.5">
+                              {[3, 4, 5, 6, 7].map((num) => (
+                                <button
+                                  key={num}
+                                  type="button"
+                                  onClick={() => setTargetTapRequired(num)}
+                                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
+                                    targetTapRequired === num
+                                      ? 'bg-[#FF6B00] text-white border-[#FF6B00] shadow-md'
+                                      : 'bg-[#1C1C1E] text-[#8E8E93] border-[#2C2C2E] hover:text-white'
+                                  }`}
+                                >
+                                  {num}×
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={handleSaveSecuritySettings}
+                            className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 mt-1 ${
+                              isPasswordSavedFeedback
+                                ? 'bg-[#34C759] text-white'
+                                : 'bg-[#FF6B00] hover:bg-[#E66000] text-white active:scale-95'
+                            }`}
+                          >
+                            {isPasswordSavedFeedback ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                Saved ✓
+                              </>
+                            ) : (
+                              'Save Security Settings'
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-white flex items-center gap-1.5">
-                        <Webhook className="w-4 h-4 text-[#FF6B00]" />
-                        Google Drive Webhook Integration
-                      </label>
-                      <button
-                        onClick={() => setIsEditingGDriveConfig(!isEditingGDriveConfig)}
-                        className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-                          isEditingGDriveConfig 
-                            ? 'bg-[#FF6B00] text-white' 
-                            : 'bg-[#1C1C1E] border border-[#2C2C2E] text-[#8E8E93] hover:text-white'
-                        }`}
-                        title={isEditingGDriveConfig ? 'Collapse Settings' : 'Edit Integration Links'}
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    {isEditingGDriveConfig && (
-                      <div className="flex flex-col gap-3 pt-1 border-t border-[#2C2C2E]">
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-semibold text-[#8E8E93] flex items-center gap-1.5">
-                            <Link className="w-3.5 h-3.5 text-[#FF6B00]" />
-                            Google Drive Folder Link
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="https://drive.google.com/drive/folders/..."
-                            value={gdriveLinkInput}
-                            onChange={(e) => setGdriveLinkInput(e.target.value)}
-                            className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[11px] font-semibold text-[#8E8E93] flex items-center gap-1.5">
-                            <Webhook className="w-3.5 h-3.5 text-[#FF6B00]" />
-                            Apps Script Webhook URL
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="https://script.google.com/macros/s/.../exec"
-                            value={gdriveWebhookInput}
-                            onChange={(e) => setGdriveWebhookInput(e.target.value)}
-                            className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
-                          />
-                        </div>
-
+                  {/* SECTION 2: CLOUD & SYNC */}
+                  <div>
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#8E8E93] mb-1.5 px-0.5">
+                      Cloud & Integration
+                    </h3>
+                    <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-white flex items-center gap-1.5">
+                          <Webhook className="w-4 h-4 text-[#FF6B00]" />
+                          Google Drive Webhook Integration
+                        </label>
                         <button
-                          onClick={handleSaveGDriveConfig}
-                          className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-md ${
-                            isLinkSavedFeedback
-                              ? 'bg-[#34C759] text-white'
-                              : 'bg-[#FF6B00] hover:bg-[#E66000] text-white active:scale-95'
+                          onClick={() => setIsEditingGDriveConfig(!isEditingGDriveConfig)}
+                          className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                            isEditingGDriveConfig 
+                              ? 'bg-[#FF6B00] text-white' 
+                              : 'bg-[#1C1C1E] border border-[#2C2C2E] text-[#8E8E93] hover:text-white'
                           }`}
+                          title={isEditingGDriveConfig ? 'Collapse Settings' : 'Edit Integration Links'}
                         >
-                          {isLinkSavedFeedback ? (
-                            <>
-                              <Check className="w-4 h-4 stroke-[3]" />
-                              Saved ✓
-                            </>
-                          ) : (
-                            'Save Changes'
-                          )}
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                    )}
+
+                      {isEditingGDriveConfig && (
+                        <div className="flex flex-col gap-3 pt-2.5 border-t border-[#2C2C2E]">
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold text-[#8E8E93] flex items-center gap-1.5">
+                              <Link className="w-3.5 h-3.5 text-[#FF6B00]" />
+                              Google Drive Folder Link
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="https://drive.google.com/drive/folders/..."
+                              value={gdriveLinkInput}
+                              onChange={(e) => setGdriveLinkInput(e.target.value)}
+                              className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold text-[#8E8E93] flex items-center gap-1.5">
+                              <Webhook className="w-3.5 h-3.5 text-[#FF6B00]" />
+                              Apps Script Webhook URL
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="https://script.google.com/macros/s/.../exec"
+                              value={gdriveWebhookInput}
+                              onChange={(e) => setGdriveWebhookInput(e.target.value)}
+                              className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
+                            />
+                          </div>
+
+                          <button
+                            onClick={handleSaveGDriveConfig}
+                            className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-md ${
+                              isLinkSavedFeedback
+                                ? 'bg-[#34C759] text-white'
+                                : 'bg-[#FF6B00] hover:bg-[#E66000] text-white active:scale-95'
+                            }`}
+                          >
+                            {isLinkSavedFeedback ? (
+                              <>
+                                <Check className="w-4 h-4 stroke-[3]" />
+                                Saved ✓
+                              </>
+                            ) : (
+                              'Save Changes'
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={handleSyncAllNotesToGDrive}
+                      disabled={isSyncingGDrive}
+                      className="w-full bg-[#FF6B00] hover:bg-[#E66000] text-white py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between shadow-md disabled:opacity-50 mt-2 transition-all active:scale-[0.99]"
+                    >
+                      <div className="flex items-center gap-2">
+                        <FolderSync className={`w-4.5 h-4.5 text-white ${isSyncingGDrive ? 'animate-spin' : ''}`} />
+                        <span>Sync ALL Notes to Google Drive</span>
+                      </div>
+                      <CloudUpload className="w-4 h-4 text-white" />
+                    </button>
                   </div>
 
-                  <button
-                    onClick={handleSyncAllNotesToGDrive}
-                    disabled={isSyncingGDrive}
-                    className="w-full bg-[#FF6B00] hover:bg-[#E66000] text-white py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between shadow-md disabled:opacity-50"
-                  >
-                    <div className="flex items-center gap-2">
-                      <FolderSync className={`w-4.5 h-4.5 text-white ${isSyncingGDrive ? 'animate-spin' : ''}`} />
-                      <span>Sync ALL Notes to Google Drive</span>
-                    </div>
-                    <CloudUpload className="w-4 h-4 text-white" />
-                  </button>
+                  {/* SECTION 3: DATA & HISTORY */}
+                  <div>
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#8E8E93] mb-1.5 px-0.5">
+                      Data & History
+                    </h3>
+                    <div className="bg-black border border-[#2C2C2E] rounded-xl overflow-hidden divide-y divide-[#2C2C2E]/60">
+                      <button
+                        onClick={handleOpenHistoryWithAuth}
+                        className="w-full p-3.5 text-white text-xs font-semibold flex items-center justify-between hover:bg-[#1C1C1E] transition-all active:bg-[#252528]"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Archive className="w-4 h-4 text-[#FF6B00]" />
+                          <span>Archive & Trash History</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[#8E8E93]">
+                          <span className="text-[10px] font-normal">{archivedNotes.length + archivedTodos.length} items</span>
+                          <Lock className="w-3.5 h-3.5 text-[#8E8E93]" />
+                        </div>
+                      </button>
 
-                  <button
-                    onClick={handleOpenHistoryWithAuth}
-                    className="w-full bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between border border-[#3A3A3C]"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Archive className="w-4 h-4 text-[#FF6B00]" />
-                      <span>Archive & Trash History</span>
-                    </div>
-                    <Lock className="w-3.5 h-3.5 text-[#8E8E93]" />
-                  </button>
+                      <button
+                        onClick={handleExportBackup}
+                        className="w-full p-3.5 text-white text-xs font-semibold flex items-center justify-between hover:bg-[#1C1C1E] transition-all active:bg-[#252528]"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Download className="w-4 h-4 text-[#FF6B00]" />
+                          <span>Export JSON Backup</span>
+                        </div>
+                        <ChevronDown className="w-3.5 h-3.5 -rotate-90 text-[#8E8E93]" />
+                      </button>
 
-                  <button
-                    onClick={handleExportBackup}
-                    className="w-full bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between border border-[#3A3A3C]"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Download className="w-4 h-4 text-[#FF6B00]" />
-                      <span>Download Full JSON Backup</span>
+                      <label className="w-full p-3.5 text-white text-xs font-semibold flex items-center justify-between hover:bg-[#1C1C1E] transition-all active:bg-[#252528] cursor-pointer">
+                        <div className="flex items-center gap-2.5">
+                          <Upload className="w-4 h-4 text-[#FF6B00]" />
+                          <span>Import JSON Backup</span>
+                        </div>
+                        <input 
+                          type="file" 
+                          accept=".json" 
+                          onChange={handleImportBackup} 
+                          className="hidden" 
+                        />
+                        <ChevronDown className="w-3.5 h-3.5 -rotate-90 text-[#8E8E93]" />
+                      </label>
                     </div>
-                  </button>
-
-                  <label className="w-full bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between border border-[#3A3A3C] cursor-pointer">
-                    <div className="flex items-center gap-2">
-                      <Upload className="w-4 h-4 text-[#FF6B00]" />
-                      <span>Import Full JSON Backup</span>
-                    </div>
-                    <input 
-                      type="file" 
-                      accept=".json" 
-                      onChange={handleImportBackup} 
-                      className="hidden" 
-                    />
-                  </label>
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-5">
