@@ -90,13 +90,56 @@ const priorityConfig: Record<TodoPriority, { label: string; color: string; bg: s
 const MASTER_PASSWORD_STORAGE_KEY = 'secure_vault_master_passcode';
 const IS_REGISTERED_STORAGE_KEY = 'secure_vault_is_registered';
 const REGISTERED_EMAIL_STORAGE_KEY = 'secure_vault_registered_email';
+const TARGET_SHAPE_STORAGE_KEY = 'secure_vault_target_shape';
+const TARGET_TAPS_STORAGE_KEY = 'secure_vault_target_taps';
+
+interface ShapeDefinition {
+  id: string;
+  label: string;
+  color: string;
+  shape: string;
+}
+
+const AVAILABLE_SHAPES: ShapeDefinition[] = [
+  { id: 'blue_circle', label: 'Blue Circle', color: '#007AFF', shape: 'circle' },
+  { id: 'rose_crescent', label: 'Rose Crescent', color: '#FF375F', shape: 'crescent' },
+  { id: 'gold_star', label: 'Gold Star', color: '#FFD60A', shape: 'star' },
+  { id: 'purple_hexagon', label: 'Purple Hexagon', color: '#AF52DE', shape: 'hexagon' },
+  { id: 'orange_pentagon', label: 'Orange Pentagon', color: '#FF6B00', shape: 'pentagon' },
+  { id: 'green_square', label: 'Green Square', color: '#34C759', shape: 'square' },
+  { id: 'red_triangle', label: 'Red Triangle', color: '#FF3B30', shape: 'triangle' },
+  { id: 'yellow_diamond', label: 'Yellow Diamond', color: '#FFCC00', shape: 'diamond' },
+  { id: 'teal_octagon', label: 'Teal Octagon', color: '#5AC8FA', shape: 'octagon' },
+  { id: 'pink_heart', label: 'Pink Heart', color: '#FF2D55', shape: 'heart' },
+  { id: 'cyan_oval', label: 'Cyan Oval', color: '#30B0C7', shape: 'oval' },
+  { id: 'mint_cross', label: 'Mint Cross', color: '#30D158', shape: 'cross' }
+];
+
+function ShapeIcon({ shape, color, className = "w-6 h-6" }: { shape: string; color: string; className?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" className={className}>
+      {shape === 'circle' && <circle cx="50" cy="50" r="42" fill={color} />}
+      {shape === 'square' && <rect x="10" y="10" width="80" height="80" rx="16" fill={color} />}
+      {shape === 'triangle' && <polygon points="50,8 92,88 8,88" fill={color} />}
+      {shape === 'diamond' && <polygon points="50,8 92,50 50,92 8,50" fill={color} />}
+      {shape === 'hexagon' && <polygon points="50,5 92,25 92,75 50,95 8,75 8,25" fill={color} />}
+      {shape === 'star' && <polygon points="50,4 63,35 96,38 72,60 79,93 50,75 21,93 28,60 4,38 37,35" fill={color} />}
+      {shape === 'pentagon' && <polygon points="50,5 95,37 78,91 22,91 5,37" fill={color} />}
+      {shape === 'octagon' && <polygon points="30,8 70,8 92,30 92,70 70,92 30,92 8,70 8,30" fill={color} />}
+      {shape === 'heart' && <path d="M50 88 C20 60 5 40 15 20 C25 5 45 15 50 25 C55 15 75 5 85 20 C95 40 80 60 50 88 Z" fill={color} />}
+      {shape === 'oval' && <ellipse cx="50" cy="50" rx="44" ry="28" fill={color} />}
+      {shape === 'cross' && <path d="M36 8 H64 V36 H92 V64 H64 V92 H36 V64 H8 V36 H36 Z" fill={color} />}
+      {shape === 'crescent' && <path d="M50 8 A42 42 0 1 0 92 50 A32 32 0 1 1 50 8 Z" fill={color} />}
+    </svg>
+  );
+}
 
 export default function App() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [activeNavTab, setActiveNavTab] = useState<'notes' | 'todos'>('notes');
   const [showPasswordText, setShowPasswordText] = useState(false);
 
-  // Password-Only Authentication State
+  // Password & Verification Shape State
   const [registeredEmail, setRegisteredEmail] = useState<string>(
     () => localStorage.getItem(REGISTERED_EMAIL_STORAGE_KEY) || ''
   );
@@ -110,17 +153,27 @@ export default function App() {
     )
   );
 
+  const [targetShapeId, setTargetShapeId] = useState<string>(
+    () => localStorage.getItem(TARGET_SHAPE_STORAGE_KEY) || 'orange_pentagon'
+  );
+  const [targetTapRequired, setTargetTapRequired] = useState<number>(
+    () => parseInt(localStorage.getItem(TARGET_TAPS_STORAGE_KEY) || '5', 10)
+  );
+
+  // Registration State
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
-  const [regEmailInput, setRegEmailInput] = useState('');
+  const [regSelectedShape, setRegSelectedShape] = useState('orange_pentagon');
+  const [regSelectedTaps, setRegSelectedTaps] = useState(5);
   const [regError, setRegError] = useState('');
 
   // Lock Screen & Shape Challenge State
   const [enteredPassword, setEnteredPassword] = useState('');
   const [lockError, setLockError] = useState('');
   const [isPasswordPassed, setIsPasswordPassed] = useState(false);
-  const [pentagonTapCount, setPentagonTapCount] = useState(0);
+  const [shapeTapCount, setShapeTapCount] = useState(0);
   const [isShapeShaking, setIsShapeShaking] = useState(false);
+
 
   // Settings State
   const [isEditingPassword, setIsEditingPassword] = useState(false);
@@ -174,7 +227,7 @@ export default function App() {
   const [showHistoryView, setShowHistoryView] = useState(false);
   const [backupStatus, setBackupStatus] = useState<string>('');
 
-  // ────────────────── REGISTRATION PROCESS (PASSWORD-ONLY) ──────────────────
+  // ────────────────── REGISTRATION PROCESS (PASSWORD + SHAPE SELECTION) ──────────────────
   const handleCreateVaultPassword = () => {
     setRegError('');
     if (!regPassword.trim() || regPassword.length < 4) {
@@ -186,17 +239,21 @@ export default function App() {
       return;
     }
 
-    // Save registration credentials
+    // Save registration credentials & chosen secret verification shape
     localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, regPassword.trim());
     localStorage.setItem(IS_REGISTERED_STORAGE_KEY, 'true');
+    localStorage.setItem(TARGET_SHAPE_STORAGE_KEY, regSelectedShape);
+    localStorage.setItem(TARGET_TAPS_STORAGE_KEY, regSelectedTaps.toString());
 
     setMasterPassword(regPassword.trim());
+    setTargetShapeId(regSelectedShape);
+    setTargetTapRequired(regSelectedTaps);
     setIsRegistered(true);
 
     // Move to Shape Security Challenge
     setIsPasswordPassed(true);
     setLockError('');
-    setPentagonTapCount(0);
+    setShapeTapCount(0);
   };
 
   // ────────────────── LOGIN HANDLER (PASSWORD-ONLY) ──────────────────
@@ -206,25 +263,25 @@ export default function App() {
       setIsPasswordPassed(true);
       setEnteredPassword('');
       setLockError('');
-      setPentagonTapCount(0);
+      setShapeTapCount(0);
     } else {
       setLockError('Incorrect Vault Password. Please try again.');
     }
   };
 
   // ────────────────── SHAPE CHALLENGE HANDLER ──────────────────
-  const handleShapeClick = (shapeId: string) => {
-    if (shapeId === 'orange_pentagon') {
-      const nextCount = pentagonTapCount + 1;
-      setPentagonTapCount(nextCount);
-      if (nextCount >= 5) {
+  const handleShapeClick = (clickedShapeId: string) => {
+    if (clickedShapeId === targetShapeId) {
+      const nextCount = shapeTapCount + 1;
+      setShapeTapCount(nextCount);
+      if (nextCount >= targetTapRequired) {
         setIsUnlocked(true);
         setIsPasswordPassed(false);
-        setPentagonTapCount(0);
+        setShapeTapCount(0);
         setActiveToastAlert('Access Granted! Welcome to SecureVault.');
       }
     } else {
-      setPentagonTapCount(0);
+      setShapeTapCount(0);
       setIsShapeShaking(true);
       setTimeout(() => setIsShapeShaking(false), 400);
     }
@@ -285,11 +342,16 @@ export default function App() {
     localStorage.removeItem(IS_REGISTERED_STORAGE_KEY);
     localStorage.removeItem(MASTER_PASSWORD_STORAGE_KEY);
     localStorage.removeItem(REGISTERED_EMAIL_STORAGE_KEY);
+    localStorage.removeItem(TARGET_SHAPE_STORAGE_KEY);
+    localStorage.removeItem(TARGET_TAPS_STORAGE_KEY);
     setIsRegistered(false);
     setIsUnlocked(false);
     setRegisteredEmail('');
     setMasterPassword('');
-    setRegEmailInput('');
+    setTargetShapeId('orange_pentagon');
+    setTargetTapRequired(5);
+    setRegSelectedShape('orange_pentagon');
+    setRegSelectedTaps(5);
     setRegPassword('');
     setRegConfirmPassword('');
     setEnteredPassword('');
@@ -841,6 +903,53 @@ export default function App() {
               </button>
             </div>
 
+            <div className="w-full text-left mt-1">
+              <label className="text-xs font-semibold text-[#8E8E93] block mb-1.5">
+                Secret Verification Shape:
+              </label>
+              <div className="grid grid-cols-4 gap-2 bg-black/60 p-2.5 rounded-xl border border-[#2C2C2E]">
+                {AVAILABLE_SHAPES.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setRegSelectedShape(s.id)}
+                    className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
+                      regSelectedShape === s.id
+                        ? 'border-[#FF6B00] bg-[#FF6B00]/20 scale-105 shadow-md'
+                        : 'border-[#2C2C2E] hover:border-gray-600 bg-[#1C1C1E]'
+                    }`}
+                  >
+                    <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
+                    <span className="text-[9px] text-[#8E8E93] mt-1 truncate max-w-full leading-tight">
+                      {s.label.split(' ')[0]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="w-full text-left">
+              <label className="text-xs font-semibold text-[#8E8E93] block mb-1.5">
+                Required Consecutive Taps:
+              </label>
+              <div className="flex items-center gap-1.5">
+                {[3, 4, 5, 6, 7].map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => setRegSelectedTaps(num)}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
+                      regSelectedTaps === num
+                        ? 'bg-[#FF6B00] text-white border-[#FF6B00] shadow-md'
+                        : 'bg-black text-[#8E8E93] border-[#2C2C2E] hover:text-white'
+                    }`}
+                  >
+                    {num}×
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <button
               onClick={handleCreateVaultPassword}
               className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm mt-2"
@@ -900,7 +1009,11 @@ export default function App() {
         </AnimatePresence>
 
         {/* ASYMMETRICAL WALLPAPER SHAPES */}
-        <div className="relative w-full h-full max-w-md mx-auto">
+        <motion.div 
+          animate={isShapeShaking ? { x: [-12, 12, -12, 12, 0] } : {}}
+          transition={{ duration: 0.35 }}
+          className="relative w-full h-full max-w-md mx-auto"
+        >
           {wallpaperShapes.map((item) => (
             <motion.button
               key={item.id}
@@ -917,23 +1030,10 @@ export default function App() {
               }}
               className="flex items-center justify-center outline-none border-none bg-transparent cursor-pointer transition-transform active:scale-90 focus:outline-none"
             >
-              <svg viewBox="0 0 100 100" className="w-full h-full filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]">
-                {item.shape === 'circle' && <circle cx="50" cy="50" r="42" fill={item.color} />}
-                {item.shape === 'square' && <rect x="10" y="10" width="80" height="80" rx="16" fill={item.color} />}
-                {item.shape === 'triangle' && <polygon points="50,8 92,88 8,88" fill={item.color} />}
-                {item.shape === 'diamond' && <polygon points="50,8 92,50 50,92 8,50" fill={item.color} />}
-                {item.shape === 'hexagon' && <polygon points="50,5 92,25 92,75 50,95 8,75 8,25" fill={item.color} />}
-                {item.shape === 'star' && <polygon points="50,4 63,35 96,38 72,60 79,93 50,75 21,93 28,60 4,38 37,35" fill={item.color} />}
-                {item.shape === 'pentagon' && <polygon points="50,5 95,37 78,91 22,91 5,37" fill={item.color} />}
-                {item.shape === 'octagon' && <polygon points="30,8 70,8 92,30 92,70 70,92 30,92 8,70 8,30" fill={item.color} />}
-                {item.shape === 'heart' && <path d="M50 88 C20 60 5 40 15 20 C25 5 45 15 50 25 C55 15 75 5 85 20 C95 40 80 60 50 88 Z" fill={item.color} />}
-                {item.shape === 'oval' && <ellipse cx="50" cy="50" rx="44" ry="28" fill={item.color} />}
-                {item.shape === 'cross' && <path d="M36 8 H64 V36 H92 V64 H64 V92 H36 V64 H8 V36 H36 Z" fill={item.color} />}
-                {item.shape === 'crescent' && <path d="M50 8 A42 42 0 1 0 92 50 A32 32 0 1 1 50 8 Z" fill={item.color} />}
-              </svg>
+              <ShapeIcon shape={item.shape} color={item.color} className="w-full h-full filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]" />
             </motion.button>
           ))}
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -1621,6 +1721,70 @@ export default function App() {
                         </button>
                       </div>
                     )}
+                  </div>
+
+                  <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
+                    <label className="text-xs font-semibold text-[#FF6B00] flex items-center gap-1.5">
+                      <KeyRound className="w-4 h-4 text-[#FF6B00]" />
+                      Stealth Verification Shape Lock
+                    </label>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold text-[#8E8E93]">
+                        Secret Verification Shape:
+                      </label>
+                      <div className="grid grid-cols-4 gap-2 bg-[#141416] p-2.5 rounded-xl border border-[#2C2C2E]">
+                        {AVAILABLE_SHAPES.map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => {
+                              setTargetShapeId(s.id);
+                              localStorage.setItem(TARGET_SHAPE_STORAGE_KEY, s.id);
+                              setActiveToastAlert(`Secret shape set to ${s.label}!`);
+                              setTimeout(() => setActiveToastAlert(''), 3000);
+                            }}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
+                              targetShapeId === s.id
+                                ? 'border-[#FF6B00] bg-[#FF6B00]/20 scale-105 shadow-md'
+                                : 'border-[#2C2C2E] hover:border-gray-600 bg-[#1C1C1E]'
+                            }`}
+                          >
+                            <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
+                            <span className="text-[9px] text-[#8E8E93] mt-1 truncate max-w-full leading-tight">
+                              {s.label.split(' ')[0]}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold text-[#8E8E93]">
+                        Required Consecutive Taps:
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        {[3, 4, 5, 6, 7].map((num) => (
+                          <button
+                            key={num}
+                            type="button"
+                            onClick={() => {
+                              setTargetTapRequired(num);
+                              localStorage.setItem(TARGET_TAPS_STORAGE_KEY, num.toString());
+                              setActiveToastAlert(`Required taps set to ${num}!`);
+                              setTimeout(() => setActiveToastAlert(''), 3000);
+                            }}
+                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
+                              targetTapRequired === num
+                                ? 'bg-[#FF6B00] text-white border-[#FF6B00] shadow-md'
+                                : 'bg-[#1C1C1E] text-[#8E8E93] border-[#2C2C2E] hover:text-white'
+                            }`}
+                          >
+                            {num}×
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
