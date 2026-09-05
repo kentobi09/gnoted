@@ -1,14 +1,12 @@
 # GNOTED
 
-An Android note app that secures passwords with Google Drive webhook cloud backup.
-
 ---
 
 ## Overview
 
-**GNOTED** is a high-contrast, privacy-focused note-taking and task management Android & Progressive Web Application (PWA). All sensitive notes, passwords, and private keys are encrypted locally using client-side **AES-GCM 256-bit encryption** before being saved to IndexedDB storage. 
+**GNOTED** is a privacy-first, zero-knowledge encrypted vault and task manager for Android and Web (PWA). Designed for maximum security and high-contrast readability, GNOTED allows you to safely store sensitive notes, passwords, private keys, and scheduled tasks.
 
-Access is protected by a 2-step verification system: passcode unlock followed by a secret shape wallpaper pattern gate requiring a set number of consecutive taps.
+All data is encrypted client-side using **AES-GCM 256-bit encryption** before being saved to local storage. Access is protected by a 2-step verification system: a passcode unlock step followed by a stealth secret shape wallpaper challenge requiring a configurable sequence of taps.
 
 ---
 
