@@ -216,7 +216,7 @@ export default function App() {
   const [lockError, setLockError] = useState('');
   const [isPasswordPassed, setIsPasswordPassed] = useState(false);
   const [shapeTapCount, setShapeTapCount] = useState(0);
-  const [isShapeShaking, setIsShapeShaking] = useState(false);
+  const [shapeRotations, setShapeRotations] = useState<Record<string, number>>({});
 
 
   // Settings State
@@ -315,6 +315,11 @@ export default function App() {
 
   // ────────────────── SHAPE CHALLENGE HANDLER ──────────────────
   const handleShapeClick = (clickedShapeId: string) => {
+    setShapeRotations(prev => ({
+      ...prev,
+      [clickedShapeId]: (prev[clickedShapeId] || 0) + 360
+    }));
+
     if (clickedShapeId === targetShapeId) {
       const nextCount = shapeTapCount + 1;
       setShapeTapCount(nextCount);
@@ -884,9 +889,9 @@ export default function App() {
             <ShieldCheck className="w-8 h-8 stroke-[2]" />
           </div>
 
-          <h1 className="text-xl font-bold mb-1 tracking-tight text-white">Create Vault Password</h1>
+          <h1 className="text-xl font-bold mb-1 tracking-tight text-white">GNOTED Setup</h1>
           <p className="text-xs text-[#8E8E93] mb-6">
-            Set a master password to encrypt and secure your private notes & tasks.
+            Set a master passcode to encrypt and secure your private notes & tasks.
           </p>
 
           {regError && (
@@ -899,7 +904,7 @@ export default function App() {
             <div className="relative w-full">
               <input
                 type={showPasswordText ? 'text' : 'password'}
-                placeholder="Set Vault Password"
+                placeholder="Passcode"
                 value={regPassword}
                 onChange={(e) => setRegPassword(e.target.value)}
                 className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
@@ -916,7 +921,7 @@ export default function App() {
             <div className="relative w-full">
               <input
                 type={showPasswordText ? 'text' : 'password'}
-                placeholder="Confirm Vault Password"
+                placeholder="Confirm passcode"
                 value={regConfirmPassword}
                 onChange={(e) => setRegConfirmPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateVaultPassword()}
@@ -983,7 +988,7 @@ export default function App() {
               className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm mt-2"
             >
               <Key className="w-4 h-4" />
-              Create Account & Unlock Vault
+              Create Account & Enter GNOTED
             </button>
           </div>
         </div>
@@ -1018,25 +1023,29 @@ export default function App() {
 
         {/* ASYMMETRICAL WALLPAPER SHAPES */}
         <div className="relative w-full h-full max-w-md mx-auto">
-          {wallpaperShapes.map((item) => (
-            <motion.button
-              key={item.id}
-              whileTap={{ scale: 0.85 }}
-              onClick={() => handleShapeClick(item.id)}
-              style={{
-                position: 'absolute',
-                top: item.top,
-                left: item.left,
-                width: `${item.size}px`,
-                height: `${item.size}px`,
-                transform: `rotate(${item.rotate}deg)`,
-                opacity: item.opacity
-              }}
-              className="flex items-center justify-center outline-none border-none bg-transparent cursor-pointer transition-transform active:scale-90 focus:outline-none"
-            >
-              <ShapeIcon shape={item.shape} color={item.color} className="w-full h-full filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]" />
-            </motion.button>
-          ))}
+          {wallpaperShapes.map((item) => {
+            const currentRotation = item.rotate + (shapeRotations[item.id] || 0);
+            return (
+              <motion.button
+                key={item.id}
+                whileTap={{ scale: 0.85 }}
+                animate={{ rotate: currentRotation }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+                onClick={() => handleShapeClick(item.id)}
+                style={{
+                  position: 'absolute',
+                  top: item.top,
+                  left: item.left,
+                  width: `${item.size}px`,
+                  height: `${item.size}px`,
+                  opacity: item.opacity
+                }}
+                className="flex items-center justify-center outline-none border-none bg-transparent cursor-pointer transition-transform focus:outline-none"
+              >
+                <ShapeIcon shape={item.shape} color={item.color} className="w-full h-full filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]" />
+              </motion.button>
+            );
+          })}
         </div>
       </div>
     );
@@ -1057,9 +1066,9 @@ export default function App() {
             <Lock className="w-7 h-7 stroke-[2]" />
           </div>
 
-          <h1 className="text-xl font-bold mb-1 tracking-tight text-white">Enter Vault Password</h1>
+          <h1 className="text-xl font-bold mb-1 tracking-tight text-white">GNOTED Unlock</h1>
           <p className="text-xs text-[#8E8E93] leading-relaxed mb-6">
-            Enter your secret password to unlock your vault session.
+            Enter your secret passcode to access GNOTED.
           </p>
 
           {lockError && (
@@ -1071,7 +1080,7 @@ export default function App() {
           <div className="relative w-full mb-4">
             <input
               type={showPasswordText ? 'text' : 'password'}
-              placeholder="Enter Vault Password"
+              placeholder="Enter passcode"
               value={enteredPassword}
               onChange={(e) => setEnteredPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLoginPasswordStepSubmit()}
@@ -1091,7 +1100,7 @@ export default function App() {
             className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm"
           >
             <Unlock className="w-4 h-4" />
-            Unlock & Enter Vault
+            Unlock GNOTED
           </button>
         </div>
       </div>
@@ -1174,7 +1183,7 @@ export default function App() {
           <div className="w-9 h-9 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] border border-[#FF6B00]/30 font-bold text-xs uppercase">
             {registeredEmail ? registeredEmail[0] : <User className="w-5 h-5" />}
           </div>
-          <span className="text-sm font-medium text-[#8E8E93]">My Secure Vault</span>
+          <span className="text-base font-bold tracking-wider text-white">GNOTED</span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -1601,7 +1610,7 @@ export default function App() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-bold text-white flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-[#FF6B00]" />
-                  Settings & Security Architecture
+                  GNOTED Settings & Security
                 </h2>
                 <button 
                   onClick={() => {
@@ -1629,7 +1638,7 @@ export default function App() {
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-white flex items-center gap-1.5">
                         <KeyRound className="w-4 h-4 text-[#FF6B00]" />
-                        Vault Security & Stealth Shape Lock
+                        GNOTED Security & Verification
                       </label>
                       <button
                         onClick={() => setIsEditingPassword(!isEditingPassword)}
@@ -1644,26 +1653,15 @@ export default function App() {
                       </button>
                     </div>
 
-                    {/* COLLAPSED SUMMARY VIEW */}
-                    {!isEditingPassword && (() => {
-                      const currentShapeObj = AVAILABLE_SHAPES.find(s => s.id === targetShapeId) || AVAILABLE_SHAPES[4];
-                      return (
-                        <div className="flex items-center justify-between bg-[#141416] p-2.5 rounded-xl border border-[#2C2C2E]">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-[#1C1C1E] border border-[#2C2C2E] flex items-center justify-center p-1.5 shrink-0">
-                              <ShapeIcon shape={currentShapeObj.shape} color={currentShapeObj.color} className="w-full h-full" />
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-semibold text-white">{currentShapeObj.label}</span>
-                              <span className="text-[10px] text-[#8E8E93]">{targetTapRequired}× Consecutive Taps Required</span>
-                            </div>
-                          </div>
-                          <span className="text-[10px] font-semibold text-[#34C759] bg-[#34C759]/15 border border-[#34C759]/30 px-2 py-0.5 rounded-full">
-                            Active Lock ✓
-                          </span>
-                        </div>
-                      );
-                    })()}
+                    {/* COLLAPSED SUMMARY VIEW (NO PRESHOWING SHAPE DETAILS) */}
+                    {!isEditingPassword && (
+                      <div className="flex items-center justify-between bg-[#141416] p-2.5 rounded-xl border border-[#2C2C2E]">
+                        <span className="text-xs font-medium text-[#8E8E93]">Passcode & Verification Shape Configured</span>
+                        <span className="text-[10px] font-semibold text-[#34C759] bg-[#34C759]/15 border border-[#34C759]/30 px-2 py-0.5 rounded-full">
+                          Active ✓
+                        </span>
+                      </div>
+                    )}
 
                     {/* EXPANDED EDIT DETAILS FORM */}
                     {isEditingPassword && (
@@ -1676,11 +1674,11 @@ export default function App() {
 
                         <div className="flex flex-col gap-1.5">
                           <label className="text-[11px] font-semibold text-[#8E8E93]">
-                            Update Vault Password (Optional):
+                            Update Passcode (Optional):
                           </label>
                           <input
                             type="password"
-                            placeholder="Enter new password (or leave blank to keep current)"
+                            placeholder="New passcode (optional)"
                             value={newPasswordInput}
                             onChange={(e) => setNewPasswordInput(e.target.value)}
                             className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
