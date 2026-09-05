@@ -198,6 +198,30 @@ export default function App() {
 
   const dispatchOtpCode = async (targetEmail: string, otpCode: string) => {
     setIsSendingOtp(true);
+    let backendSuccess = false;
+    let backendMsg = '';
+
+    // Real Backend Email Dispatch via Node.js Express API
+    try {
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: targetEmail, otp: otpCode })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        backendSuccess = true;
+        backendMsg = `📩 2FA OTP Email sent to ${targetEmail}! Check your Gmail / Inbox.`;
+        if (data.previewUrl) {
+          console.log('Ethereal Mail Preview URL:', data.previewUrl);
+        }
+      } else {
+        backendMsg = `⚠️ Email Server Error: ${data.error || 'Failed to dispatch email.'}`;
+      }
+    } catch (err: any) {
+      console.warn('Backend API request failed:', err);
+      backendMsg = `⚠️ Could not connect to Email Server. (Local Code: [ ${otpCode} ])`;
+    }
     
     // Optional GDrive Webhook dispatch
     const webhookUrl = getSavedGoogleDriveWebhookUrl();
@@ -213,9 +237,8 @@ export default function App() {
       }
     }
 
-    // Zero-cost Dismissable Toast alert + Browser Notification display
-    const alertMsg = `📩 2FA Email OTP Sent to ${targetEmail} | Code: [ ${otpCode} ]`;
-    setActiveToastAlert(alertMsg);
+    // Set Active Toast Alert
+    setActiveToastAlert(backendMsg || `📩 2FA Email OTP Sent to ${targetEmail}`);
 
     if ('Notification' in window && Notification.permission === 'granted') {
       try {

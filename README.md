@@ -61,7 +61,7 @@ graph TD
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/secure-vault-pwa.git
+   git clone https://github.com/kentobi09/gnoted.git
    cd secure-vault-pwa
    ```
 
@@ -70,13 +70,25 @@ graph TD
    npm install
    ```
 
-3. **Start Development Server**:
+3. **Configure Real Email Delivery (Optional)**:
+   Create a `.env` file based on `.env.example`:
+   ```env
+   PORT=3001
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=465
+   SMTP_SECURE=true
+   SMTP_USER=your-email@gmail.com
+   SMTP_PASS=your-gmail-app-password
+   ```
+   *Note: If no SMTP credentials are set, the backend will default to Ethereal Test Mailer and log direct preview links.*
+
+4. **Start Development Server (Frontend + Express Backend)**:
    ```bash
    npm run dev
    ```
-   Open your browser at `http://localhost:5173`.
+   Open your browser at `http://localhost:5173`. Express backend runs on `http://localhost:3001`.
 
-4. **Build Production Bundle**:
+5. **Build Production Bundle**:
    ```bash
    npm run build
    ```
