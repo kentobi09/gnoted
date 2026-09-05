@@ -82,9 +82,9 @@ interface DecryptedTodo {
 
 const priorityConfig: Record<TodoPriority, { label: string; color: string; bg: string }> = {
   urgent: { label: 'Urgent', color: '#FF3B30', bg: 'rgba(255, 59, 48, 0.15)' },
-  important: { label: 'Important', color: '#FF6B00', bg: 'rgba(255, 107, 0, 0.15)' },
-  neutral: { label: 'Neutral', color: '#007AFF', bg: 'rgba(0, 122, 255, 0.15)' },
-  if_time: { label: 'Someday', color: '#34C759', bg: 'rgba(52, 199, 89, 0.15)' }
+  important: { label: 'Important', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.15)' },
+  neutral: { label: 'Neutral', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.15)' },
+  if_time: { label: 'Someday', color: '#10B981', bg: 'rgba(16, 185, 129, 0.15)' }
 };
 
 const MASTER_PASSWORD_STORAGE_KEY = 'secure_vault_master_passcode';
@@ -101,18 +101,18 @@ interface ShapeDefinition {
 }
 
 const AVAILABLE_SHAPES: ShapeDefinition[] = [
-  { id: 'blue_circle', label: 'Blue Circle', color: '#007AFF', shape: 'circle' },
-  { id: 'rose_crescent', label: 'Rose Crescent', color: '#FF375F', shape: 'crescent' },
-  { id: 'gold_star', label: 'Gold Star', color: '#FFD60A', shape: 'star' },
-  { id: 'purple_hexagon', label: 'Purple Hexagon', color: '#AF52DE', shape: 'hexagon' },
-  { id: 'orange_pentagon', label: 'Orange Pentagon', color: '#FF6B00', shape: 'pentagon' },
-  { id: 'green_square', label: 'Green Square', color: '#34C759', shape: 'square' },
-  { id: 'red_triangle', label: 'Red Triangle', color: '#FF3B30', shape: 'triangle' },
-  { id: 'yellow_diamond', label: 'Yellow Diamond', color: '#FFCC00', shape: 'diamond' },
-  { id: 'teal_octagon', label: 'Teal Octagon', color: '#5AC8FA', shape: 'octagon' },
-  { id: 'pink_heart', label: 'Pink Heart', color: '#FF2D55', shape: 'heart' },
-  { id: 'cyan_oval', label: 'Cyan Oval', color: '#30B0C7', shape: 'oval' },
-  { id: 'mint_cross', label: 'Mint Cross', color: '#30D158', shape: 'cross' }
+  { id: 'blue_circle', label: 'Blue Circle', color: '#3B82F6', shape: 'circle' },
+  { id: 'rose_crescent', label: 'Rose Crescent', color: '#F43F5E', shape: 'crescent' },
+  { id: 'gold_star', label: 'Gold Star', color: '#F59E0B', shape: 'star' },
+  { id: 'purple_hexagon', label: 'Purple Hexagon', color: '#A855F7', shape: 'hexagon' },
+  { id: 'orange_pentagon', label: 'Amber Pentagon', color: '#F59E0B', shape: 'pentagon' },
+  { id: 'green_square', label: 'Green Square', color: '#10B981', shape: 'square' },
+  { id: 'red_triangle', label: 'Red Triangle', color: '#EF4444', shape: 'triangle' },
+  { id: 'yellow_diamond', label: 'Yellow Diamond', color: '#FBBF24', shape: 'diamond' },
+  { id: 'teal_octagon', label: 'Teal Octagon', color: '#14B8A6', shape: 'octagon' },
+  { id: 'pink_heart', label: 'Pink Heart', color: '#EC4899', shape: 'heart' },
+  { id: 'cyan_oval', label: 'Cyan Oval', color: '#06B6D4', shape: 'oval' },
+  { id: 'mint_cross', label: 'Mint Cross', color: '#34D399', shape: 'cross' }
 ];
 
 function ShapeIcon({ shape, color, className = "w-6 h-6" }: { shape: string; color: string; className?: string }) {
@@ -159,14 +159,14 @@ function ToastNotificationBanner({
           }}
           className="fixed top-4 left-4 right-4 max-w-md mx-auto z-[9999] pointer-events-auto touch-pan-x cursor-grab active:cursor-grabbing select-none"
         >
-          <div className="bg-gradient-to-r from-[#06B6D4] to-[#0284C7] text-white p-3.5 px-4 rounded-2xl shadow-xl shadow-[#06B6D4]/25 flex items-center justify-between border border-white/25 backdrop-blur-md">
+          <div className="bg-[#F59E0B] text-black p-3.5 px-4 rounded-2xl shadow-xl shadow-[#F59E0B]/20 flex items-center justify-between border border-[#FBBF24]/50 backdrop-blur-md">
             <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
-              <BellRing className="w-5 h-5 shrink-0 text-white" />
-              <p className="text-xs font-semibold leading-snug break-words text-white">{message}</p>
+              <BellRing className="w-5 h-5 shrink-0 text-black" />
+              <p className="text-xs font-bold leading-snug break-words text-black">{message}</p>
             </div>
             <button
               onClick={onClose}
-              className="text-white/80 hover:text-white p-1.5 rounded-full hover:bg-white/20 shrink-0 transition-colors"
+              className="text-black/80 hover:text-black p-1.5 rounded-full hover:bg-black/10 shrink-0 transition-colors"
               title="Dismiss notification"
             >
               <X className="w-4 h-4" />
@@ -218,7 +218,6 @@ export default function App() {
   const [shapeTapCount, setShapeTapCount] = useState(0);
   const [shapeRotations, setShapeRotations] = useState<Record<string, number>>({});
 
-
   // Settings State
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [newPasswordInput, setNewPasswordInput] = useState('');
@@ -248,81 +247,221 @@ export default function App() {
   const [notifiedTaskIds, setNotifiedTaskIds] = useState<Record<number, boolean>>({});
   const [activeToastAlert, setActiveToastAlert] = useState<string>('');
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(
-    typeof Notification !== 'undefined' ? Notification.permission : 'default'
+    () => (typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default')
   );
-
-  // GDrive Config
-  const savedFolderLink = getSavedGoogleDriveFolderLink();
-  const savedWebhookUrl = getSavedGoogleDriveWebhookUrl();
-  const [gdriveLinkInput, setGdriveLinkInput] = useState<string>(savedFolderLink);
-  const [gdriveWebhookInput, setGdriveWebhookInput] = useState<string>(savedWebhookUrl);
-  const [isEditingGDriveConfig, setIsEditingGDriveConfig] = useState(false);
-  const [isLinkSavedFeedback, setIsLinkSavedFeedback] = useState(false);
-  const [isSyncingGDrive, setIsSyncingGDrive] = useState(false);
-
-  const hasUnsavedConfigChanges = 
-    gdriveLinkInput.trim() !== savedFolderLink.trim() || 
-    gdriveWebhookInput.trim() !== savedWebhookUrl.trim();
 
   const dateInputRef = useRef<HTMLInputElement>(null);
 
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isHistoryAuthenticated, setIsHistoryAuthenticated] = useState(false);
-  const [showHistoryView, setShowHistoryView] = useState(false);
-  const [backupStatus, setBackupStatus] = useState<string>('');
+  const openDatePicker = () => {
+    if (dateInputRef.current) {
+      if (typeof dateInputRef.current.showPicker === 'function') {
+        dateInputRef.current.showPicker();
+      } else {
+        dateInputRef.current.focus();
+        dateInputRef.current.click();
+      }
+    }
+  };
 
-  // ────────────────── REGISTRATION PROCESS (PASSWORD + SHAPE SELECTION) ──────────────────
+  // Google Drive Config State
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [gdriveLinkInput, setGdriveLinkInput] = useState<string>(
+    () => getSavedGoogleDriveFolderLink() || ''
+  );
+  const [gdriveWebhookInput, setGdriveWebhookInput] = useState<string>(
+    () => getSavedGoogleDriveWebhookUrl() || ''
+  );
+  const [isEditingGDriveConfig, setIsEditingGDriveConfig] = useState(false);
+  const [isSyncingGDrive, setIsSyncingGDrive] = useState(false);
+  const [backupStatus, setBackupStatus] = useState<string>('');
+  const [isLinkSavedFeedback, setIsLinkSavedFeedback] = useState(false);
+
+  // History Security Auth State
+  const [showHistoryView, setShowHistoryView] = useState(false);
+
+  // Initial load
+  useEffect(() => {
+    if (isUnlocked) {
+      loadNotes();
+      loadTodos();
+    }
+  }, [isUnlocked]);
+
+  // Request browser notification permissions on demand
+  const handleRequestNotificationPermission = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      const perm = await Notification.requestPermission();
+      setNotificationPermission(perm);
+      if (perm === 'granted') {
+        setActiveToastAlert('Deadline notifications enabled successfully.');
+      }
+    }
+  };
+
+  // Check upcoming/overdue tasks every 10 seconds for notifications & toast banner
+  useEffect(() => {
+    if (!isUnlocked || todos.length === 0) return;
+
+    const interval = setInterval(() => {
+      const nowMs = Date.now();
+      todos.forEach((todo) => {
+        if (todo.completed || todo.isArchived || !todo.dueDate || !todo.id) return;
+
+        const dueMs = new Date(todo.dueDate).getTime();
+        if (isNaN(dueMs)) return;
+
+        const diffMinutes = (dueMs - nowMs) / (1000 * 60);
+
+        if (diffMinutes <= 15 && diffMinutes >= -120 && !notifiedTaskIds[todo.id]) {
+          const alertMsg = `Task Reminder: "${todo.title}" is due ${
+            diffMinutes < 0 ? 'now or overdue' : `in ${Math.round(diffMinutes)} minutes`
+          }!`;
+
+          setActiveToastAlert(alertMsg);
+
+          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+            try {
+              new Notification('GNOTED Task Reminder', {
+                body: alertMsg,
+                icon: '/icon-192.png'
+              });
+            } catch (e) {
+              console.error('Browser notification error:', e);
+            }
+          }
+
+          setNotifiedTaskIds((prev) => ({ ...prev, [todo.id!]: true }));
+        }
+      });
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [isUnlocked, todos, notifiedTaskIds]);
+
+  const loadNotes = async () => {
+    try {
+      const encryptedRows = await getAllEncryptedNotes();
+      const decrypted: DecryptedNote[] = [];
+
+      for (const row of encryptedRows) {
+        try {
+          const decryptedTitle = await decryptText({
+            ciphertextBase64: row.encryptedTitle,
+            ivBase64: row.titleIv
+          });
+          const decryptedContent = await decryptText({
+            ciphertextBase64: row.encryptedContent,
+            ivBase64: row.contentIv
+          });
+          decrypted.push({
+            id: row.id,
+            title: decryptedTitle,
+            content: decryptedContent,
+            categoryTag: row.categoryTag || 'Personal',
+            isSensitive: row.isSensitive,
+            isArchived: row.isArchived,
+            createdAt: row.createdAt,
+            updatedAt: row.updatedAt
+          });
+        } catch (e) {
+          console.error(`Failed to decrypt note #${row.id}`, e);
+        }
+      }
+
+      decrypted.sort((a, b) => b.updatedAt - a.updatedAt);
+      setNotes(decrypted);
+    } catch (err) {
+      console.error('Error loading notes:', err);
+    }
+  };
+
+  const loadTodos = async () => {
+    try {
+      const encryptedRows = await getAllEncryptedTodos();
+      const decrypted: DecryptedTodo[] = [];
+
+      for (const row of encryptedRows) {
+        try {
+          const decryptedTitle = await decryptText({
+            ciphertextBase64: row.encryptedTitle,
+            ivBase64: row.titleIv
+          });
+          decrypted.push({
+            id: row.id,
+            title: decryptedTitle,
+            completed: row.completed,
+            isArchived: row.isArchived,
+            priority: row.priority || 'important',
+            dueDate: row.dueDate,
+            createdAt: row.createdAt,
+            updatedAt: row.updatedAt
+          });
+        } catch (e) {
+          console.error(`Failed to decrypt todo #${row.id}`, e);
+        }
+      }
+
+      decrypted.sort((a, b) => b.createdAt - a.createdAt);
+      setTodos(decrypted);
+    } catch (err) {
+      console.error('Error loading todos:', err);
+    }
+  };
+
+  // Password Registration Handler
   const handleCreateVaultPassword = () => {
     setRegError('');
-    if (!regPassword.trim() || regPassword.length < 4) {
-      setRegError('Vault Password must be at least 4 characters.');
+    if (!regPassword) {
+      setRegError('Passcode cannot be empty.');
+      return;
+    }
+    if (regPassword.length < 4) {
+      setRegError('Passcode must be at least 4 characters long.');
       return;
     }
     if (regPassword !== regConfirmPassword) {
-      setRegError('Passwords do not match.');
+      setRegError('Passcodes do not match.');
       return;
     }
 
-    // Save registration credentials & chosen secret verification shape
-    localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, regPassword.trim());
+    localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, regPassword);
     localStorage.setItem(IS_REGISTERED_STORAGE_KEY, 'true');
     localStorage.setItem(TARGET_SHAPE_STORAGE_KEY, regSelectedShape);
     localStorage.setItem(TARGET_TAPS_STORAGE_KEY, regSelectedTaps.toString());
 
-    setMasterPassword(regPassword.trim());
+    setMasterPassword(regPassword);
     setTargetShapeId(regSelectedShape);
     setTargetTapRequired(regSelectedTaps);
     setIsRegistered(true);
+    setIsUnlocked(true);
+  };
 
-    // Move to Shape Security Challenge
-    setIsPasswordPassed(true);
+  // Login Handler (Password Step)
+  const handleLoginPasswordStepSubmit = () => {
     setLockError('');
+    const storedMaster = localStorage.getItem(MASTER_PASSWORD_STORAGE_KEY);
+    if (!storedMaster || enteredPassword !== storedMaster) {
+      setLockError('Incorrect passcode.');
+      return;
+    }
+
+    setMasterPassword(enteredPassword);
+    setIsPasswordPassed(true);
+    setEnteredPassword('');
     setShapeTapCount(0);
   };
 
-  // ────────────────── LOGIN HANDLER (PASSWORD-ONLY) ──────────────────
-  const handleLoginPasswordStepSubmit = () => {
-    setLockError('');
-    if (enteredPassword.trim() === masterPassword.trim()) {
-      setIsPasswordPassed(true);
-      setEnteredPassword('');
-      setLockError('');
-      setShapeTapCount(0);
-    } else {
-      setLockError('Incorrect Vault Password. Please try again.');
-    }
-  };
-
-  // ────────────────── SHAPE CHALLENGE HANDLER ──────────────────
-  const handleShapeClick = (clickedShapeId: string) => {
-    setShapeRotations(prev => ({
+  // Shape Tap Handler for Stealth Lock Screen
+  const handleShapeClick = (shapeId: string) => {
+    setShapeRotations((prev) => ({
       ...prev,
-      [clickedShapeId]: (prev[clickedShapeId] || 0) + 360
+      [shapeId]: (prev[shapeId] || 0) + 360
     }));
 
-    if (clickedShapeId === targetShapeId) {
+    if (shapeId === targetShapeId) {
       const nextCount = shapeTapCount + 1;
       setShapeTapCount(nextCount);
+
       if (nextCount >= targetTapRequired) {
         setIsUnlocked(true);
         setIsPasswordPassed(false);
@@ -333,282 +472,116 @@ export default function App() {
     }
   };
 
-
-  useEffect(() => {
-    if (isUnlocked) {
-      loadNotes();
-      loadTodos();
-    }
-  }, [isUnlocked]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      checkTaskDeadlineNotifications(todos);
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [isUnlocked, todos, notifiedTaskIds]);
-
-  useEffect(() => {
-    const handleVisibility = () => {
-      if (document.hidden) {
-        setIsUnlocked(false);
-        setIsHistoryAuthenticated(false);
-        setShowHistoryView(false);
-        setLockError('');
-        setEnteredPassword('');
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, []);
-
   const handleSaveSecuritySettings = () => {
-    let passwordUpdated = false;
-    if (newPasswordInput.trim()) {
-      if (newPasswordInput.trim().length < 4) {
-        setPasswordChangeStatus('Password must be at least 4 characters.');
+    setPasswordChangeStatus('');
+
+    if (newPasswordInput) {
+      if (newPasswordInput.length < 4) {
+        setPasswordChangeStatus('New passcode must be at least 4 characters.');
         return;
       }
-      localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, newPasswordInput.trim());
-      setMasterPassword(newPasswordInput.trim());
+
+      localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, newPasswordInput);
+      setMasterPassword(newPasswordInput);
       setNewPasswordInput('');
-      passwordUpdated = true;
     }
 
     localStorage.setItem(TARGET_SHAPE_STORAGE_KEY, targetShapeId);
     localStorage.setItem(TARGET_TAPS_STORAGE_KEY, targetTapRequired.toString());
 
     setIsPasswordSavedFeedback(true);
-    setPasswordChangeStatus(passwordUpdated ? 'Password & Secret Shape updated ✓' : 'Security Shape settings saved ✓');
-
     setTimeout(() => {
       setIsPasswordSavedFeedback(false);
-      setPasswordChangeStatus('');
       setIsEditingPassword(false);
-    }, 2000);
-  };
-
-  const handleResetAccount = () => {
-    localStorage.removeItem(IS_REGISTERED_STORAGE_KEY);
-    localStorage.removeItem(MASTER_PASSWORD_STORAGE_KEY);
-    localStorage.removeItem(REGISTERED_EMAIL_STORAGE_KEY);
-    localStorage.removeItem(TARGET_SHAPE_STORAGE_KEY);
-    localStorage.removeItem(TARGET_TAPS_STORAGE_KEY);
-    setIsRegistered(false);
-    setIsUnlocked(false);
-    setRegisteredEmail('');
-    setMasterPassword('');
-    setTargetShapeId('orange_pentagon');
-    setTargetTapRequired(5);
-    setRegSelectedShape('orange_pentagon');
-    setRegSelectedTaps(5);
-    setRegPassword('');
-    setRegConfirmPassword('');
-    setEnteredPassword('');
-    setLockError('');
-    setRegError('');
-  };
-
-  const handleRequestNotificationPermission = async () => {
-    if ('Notification' in window) {
-      try {
-        const permission = await Notification.requestPermission();
-        setNotificationPermission(permission);
-        if (permission === 'granted') {
-          setActiveToastAlert('Deadline Notifications Enabled! You will be alerted when tasks are due.');
-          setTimeout(() => setActiveToastAlert(''), 4000);
-        } else {
-          setActiveToastAlert('Notification permission was blocked in browser settings.');
-          setTimeout(() => setActiveToastAlert(''), 4000);
-        }
-      } catch (e) {
-        console.error('Failed to request notification permission:', e);
-      }
-    }
-  };
-
-  const checkTaskDeadlineNotifications = (tasks: DecryptedTodo[]) => {
-    const nowStr = new Date().toISOString().slice(0, 16);
-
-    tasks.forEach(task => {
-      if (!task.completed && task.dueDate && task.id) {
-        const formattedDueDate = task.dueDate.slice(0, 16);
-        
-        if (formattedDueDate <= nowStr && !notifiedTaskIds[task.id]) {
-          setNotifiedTaskIds(prev => ({ ...prev, [task.id!]: true }));
-
-          const alertMessage = `Task Deadline Due: "${task.title}"`;
-          setActiveToastAlert(alertMessage);
-
-          if ('Notification' in window && Notification.permission === 'granted') {
-            try {
-              new Notification('Task Deadline Due!', {
-                body: alertMessage,
-                icon: '/vite.svg',
-                tag: `task-${task.id}`
-              });
-            } catch (e) {
-              console.error('System Notification error:', e);
-            }
-          }
-        }
-      }
-    });
-  };
-
-  const loadNotes = async () => {
-    try {
-      const encryptedRows = await getAllEncryptedNotes();
-      const decrypted = await Promise.all(
-        encryptedRows.map(async (row) => {
-          const title = await decryptText({ ciphertextBase64: row.encryptedTitle, ivBase64: row.titleIv });
-          const content = await decryptText({ ciphertextBase64: row.encryptedContent, ivBase64: row.contentIv });
-          return {
-            id: row.id,
-            title,
-            content,
-            categoryTag: row.categoryTag,
-            isSensitive: row.isSensitive,
-            isArchived: row.isArchived || false,
-            createdAt: row.createdAt,
-            updatedAt: row.updatedAt
-          };
-        })
-      );
-      setNotes(decrypted);
-
-      if (selectedNoteForView) {
-        const updated = decrypted.find(n => n.id === selectedNoteForView.id);
-        if (updated) setSelectedNoteForView(updated);
-      }
-    } catch (e) {
-      console.error('Failed to load notes:', e);
-    }
-  };
-
-  const loadTodos = async () => {
-    try {
-      const encryptedRows = await getAllEncryptedTodos();
-      const decrypted = await Promise.all(
-        encryptedRows.map(async (row) => {
-          const title = await decryptText({ ciphertextBase64: row.encryptedTitle, ivBase64: row.titleIv });
-          return {
-            id: row.id,
-            title,
-            completed: row.completed,
-            isArchived: row.isArchived || row.completed || false,
-            priority: (row.priority as TodoPriority) || 'important',
-            dueDate: row.dueDate,
-            createdAt: row.createdAt,
-            updatedAt: row.updatedAt
-          };
-        })
-      );
-      setTodos(decrypted);
-      checkTaskDeadlineNotifications(decrypted);
-    } catch (e) {
-      console.error('Failed to load todos:', e);
-    }
+    }, 1500);
   };
 
   const handleSaveNote = async () => {
-    setSaveError('');
-    if (!editingNote.title && !editingNote.content) {
-      setSaveError('Please enter a title or content.');
+    if (!editingNote.title?.trim() || !editingNote.content?.trim()) {
+      setSaveError('Please provide both a title and content.');
       return;
     }
 
     try {
-      const encryptedTitle = await encryptText(editingNote.title || 'Untitled Note');
-      const encryptedContent = await encryptText(editingNote.content || '');
+      const encTitle = await encryptText(editingNote.title.trim());
+      const encContent = await encryptText(editingNote.content.trim());
+      const now = Date.now();
 
-      const categoryTag = editingNote.categoryTag || 'Personal';
-      const isSensitive = categoryTag === 'Passwords' || categoryTag === 'Private Keys';
-
-      const row: EncryptedNoteRow = {
-        encryptedTitle: encryptedTitle.ciphertextBase64,
-        titleIv: encryptedTitle.ivBase64,
-        encryptedContent: encryptedContent.ciphertextBase64,
-        contentIv: encryptedContent.ivBase64,
-        categoryTag,
-        isSensitive,
-        isArchived: editingNote.isArchived || false,
-        createdAt: editingNote.createdAt || Date.now(),
-        updatedAt: Date.now()
+      const noteToSave: EncryptedNoteRow = {
+        id: editingNote.id,
+        encryptedTitle: encTitle.ciphertextBase64,
+        titleIv: encTitle.ivBase64,
+        encryptedContent: encContent.ciphertextBase64,
+        contentIv: encContent.ivBase64,
+        categoryTag: editingNote.categoryTag || 'Personal',
+        isSensitive: editingNote.categoryTag === 'Passwords' || editingNote.categoryTag === 'Private Keys' || Boolean(editingNote.isSensitive),
+        isArchived: Boolean(editingNote.isArchived),
+        createdAt: editingNote.createdAt || now,
+        updatedAt: now
       };
 
-      if (editingNote.id !== undefined) {
-        row.id = editingNote.id;
-      }
-
-      await saveEncryptedNote(row);
-
-      if (gdriveLinkInput) {
-        saveGoogleDriveFolderLink(gdriveLinkInput);
-      }
-
+      await saveEncryptedNote(noteToSave);
+      await loadNotes();
       setIsEditorOpen(false);
       setEditingNote({ title: '', content: '', categoryTag: 'Personal', isSensitive: false });
-      await loadNotes();
-    } catch (err: any) {
-      console.error('Error saving note:', err);
-      setSaveError(err?.message || 'Failed to save note.');
+      setSaveError('');
+    } catch (err) {
+      console.error('Save note error:', err);
+      setSaveError('Failed to encrypt and save note.');
     }
   };
 
   const handleArchiveNote = async (note: DecryptedNote) => {
+    if (!note.id) return;
     try {
-      const encryptedTitle = await encryptText(note.title);
-      const encryptedContent = await encryptText(note.content);
+      const encTitle = await encryptText(note.title);
+      const encContent = await encryptText(note.content);
 
-      const row: EncryptedNoteRow = {
+      await saveEncryptedNote({
         id: note.id,
-        encryptedTitle: encryptedTitle.ciphertextBase64,
-        titleIv: encryptedTitle.ivBase64,
-        encryptedContent: encryptedContent.ciphertextBase64,
-        contentIv: encryptedContent.ivBase64,
+        encryptedTitle: encTitle.ciphertextBase64,
+        titleIv: encTitle.ivBase64,
+        encryptedContent: encContent.ciphertextBase64,
+        contentIv: encContent.ivBase64,
         categoryTag: note.categoryTag,
         isSensitive: note.isSensitive,
         isArchived: true,
         createdAt: note.createdAt,
         updatedAt: Date.now()
-      };
+      });
 
-      await saveEncryptedNote(row);
       if (selectedNoteForView?.id === note.id) {
         setSelectedNoteForView(null);
       }
+
       await loadNotes();
-    } catch (e) {
-      console.error('Failed to archive note:', e);
+    } catch (err) {
+      console.error('Archive note error:', err);
     }
   };
 
   const handleRestoreNote = async (note: DecryptedNote) => {
+    if (!note.id) return;
     try {
-      const encryptedTitle = await encryptText(note.title);
-      const encryptedContent = await encryptText(note.content);
+      const encTitle = await encryptText(note.title);
+      const encContent = await encryptText(note.content);
 
-      const row: EncryptedNoteRow = {
+      await saveEncryptedNote({
         id: note.id,
-        encryptedTitle: encryptedTitle.ciphertextBase64,
-        titleIv: encryptedTitle.ivBase64,
-        encryptedContent: encryptedContent.ciphertextBase64,
-        contentIv: encryptedContent.ivBase64,
+        encryptedTitle: encTitle.ciphertextBase64,
+        titleIv: encTitle.ivBase64,
+        encryptedContent: encContent.ciphertextBase64,
+        contentIv: encContent.ivBase64,
         categoryTag: note.categoryTag,
         isSensitive: note.isSensitive,
         isArchived: false,
         createdAt: note.createdAt,
         updatedAt: Date.now()
-      };
+      });
 
-      await saveEncryptedNote(row);
       await loadNotes();
-    } catch (e) {
-      console.error('Failed to restore note:', e);
+    } catch (err) {
+      console.error('Restore note error:', err);
     }
   };
 
@@ -617,8 +590,8 @@ export default function App() {
     try {
       await deleteEncryptedNote(id);
       await loadNotes();
-    } catch (e) {
-      console.error('Failed to delete note:', e);
+    } catch (err) {
+      console.error('Delete note error:', err);
     }
   };
 
@@ -630,69 +603,74 @@ export default function App() {
     }
 
     try {
-      const encryptedTitle = await encryptText(newTodoTitle.trim());
-      const row: EncryptedTodoRow = {
-        encryptedTitle: encryptedTitle.ciphertextBase64,
-        titleIv: encryptedTitle.ivBase64,
+      const encTitle = await encryptText(newTodoTitle.trim());
+      const now = Date.now();
+
+      const todoToSave: EncryptedTodoRow = {
+        encryptedTitle: encTitle.ciphertextBase64,
+        titleIv: encTitle.ivBase64,
         completed: false,
         isArchived: false,
         priority: newTodoPriority,
         dueDate: newTodoDueDate || undefined,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
+        createdAt: now,
+        updatedAt: now
       };
 
-      await saveEncryptedTodo(row);
+      await saveEncryptedTodo(todoToSave);
       setNewTodoTitle('');
       setNewTodoDueDate('');
+      setNewTodoPriority('important');
       await loadTodos();
-    } catch (err: any) {
-      console.error('Error saving todo:', err);
-      setTodoError('Failed to save todo.');
+    } catch (err) {
+      console.error('Save todo error:', err);
+      setTodoError('Failed to encrypt and save task.');
     }
   };
 
   const handleToggleTodo = async (todo: DecryptedTodo) => {
+    if (!todo.id) return;
     try {
-      const encryptedTitle = await encryptText(todo.title);
-      const row: EncryptedTodoRow = {
+      const encTitle = await encryptText(todo.title);
+
+      await saveEncryptedTodo({
         id: todo.id,
-        encryptedTitle: encryptedTitle.ciphertextBase64,
-        titleIv: encryptedTitle.ivBase64,
+        encryptedTitle: encTitle.ciphertextBase64,
+        titleIv: encTitle.ivBase64,
         completed: !todo.completed,
         isArchived: !todo.completed,
         priority: todo.priority,
         dueDate: todo.dueDate,
         createdAt: todo.createdAt,
         updatedAt: Date.now()
-      };
+      });
 
-      await saveEncryptedTodo(row);
       await loadTodos();
-    } catch (e) {
-      console.error('Failed to toggle todo:', e);
+    } catch (err) {
+      console.error('Toggle todo error:', err);
     }
   };
 
   const handleRestoreTodo = async (todo: DecryptedTodo) => {
+    if (!todo.id) return;
     try {
-      const encryptedTitle = await encryptText(todo.title);
-      const row: EncryptedTodoRow = {
+      const encTitle = await encryptText(todo.title);
+
+      await saveEncryptedTodo({
         id: todo.id,
-        encryptedTitle: encryptedTitle.ciphertextBase64,
-        titleIv: encryptedTitle.ivBase64,
+        encryptedTitle: encTitle.ciphertextBase64,
+        titleIv: encTitle.ivBase64,
         completed: false,
         isArchived: false,
         priority: todo.priority,
         dueDate: todo.dueDate,
         createdAt: todo.createdAt,
         updatedAt: Date.now()
-      };
+      });
 
-      await saveEncryptedTodo(row);
       await loadTodos();
-    } catch (e) {
-      console.error('Failed to restore todo:', e);
+    } catch (err) {
+      console.error('Restore todo error:', err);
     }
   };
 
@@ -701,103 +679,47 @@ export default function App() {
     try {
       await deleteEncryptedTodo(id);
       await loadTodos();
-    } catch (e) {
-      console.error('Failed to delete todo:', e);
-    }
-  };
-
-  const openDatePicker = () => {
-    if (dateInputRef.current) {
-      try {
-        if ('showPicker' in HTMLInputElement.prototype) {
-          dateInputRef.current.showPicker();
-        } else {
-          dateInputRef.current.focus();
-        }
-      } catch (e) {
-        dateInputRef.current.focus();
-      }
-    }
-  };
-
-  const formatDueDateDisplay = (rawDueDate?: string) => {
-    if (!rawDueDate) return null;
-    try {
-      const d = new Date(rawDueDate);
-      if (isNaN(d.getTime())) return rawDueDate;
-      return d.toLocaleString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return rawDueDate;
+    } catch (err) {
+      console.error('Delete todo error:', err);
     }
   };
 
   const handleSaveGDriveConfig = () => {
     saveGoogleDriveFolderLink(gdriveLinkInput);
     saveGoogleDriveWebhookUrl(gdriveWebhookInput);
-
     setIsLinkSavedFeedback(true);
-    setIsEditingGDriveConfig(false);
-    setBackupStatus('Google Drive Webhook settings saved successfully!');
-    setActiveToastAlert('Settings Saved Successfully ✓');
-    
     setTimeout(() => {
       setIsLinkSavedFeedback(false);
-      setActiveToastAlert('');
-    }, 2500);
+      setIsEditingGDriveConfig(false);
+    }, 1500);
   };
 
   const handleSyncAllNotesToGDrive = async () => {
+    setBackupStatus('');
     setIsSyncingGDrive(true);
-    setBackupStatus('Connecting to Google Drive Webhook...');
-
     try {
-      const encryptedNotes = await getAllEncryptedNotes();
-      const encryptedTodos = await getAllEncryptedTodos();
-
-      if (encryptedNotes.length === 0 && encryptedTodos.length === 0) {
-        setBackupStatus('No notes or tasks available to upload.');
+      const activeNotesList = notes.filter((n) => !n.isArchived);
+      if (activeNotesList.length === 0) {
+        setBackupStatus('No active notes to sync.');
         setIsSyncingGDrive(false);
         return;
       }
 
-      const filename = `vault_backup_notes_${Date.now()}.json`;
-
-      const gdrivePayload = {
-        app: 'SecureVaultNotesPWA',
-        uploadedAt: new Date().toISOString(),
-        notesCount: encryptedNotes.length,
-        todosCount: encryptedTodos.length,
-        notes: encryptedNotes,
-        todos: encryptedTodos
-      };
-
-      const payloadJson = JSON.stringify(gdrivePayload, null, 2);
-
-      const result = await uploadDirectToGoogleDrive({
-        folderUrlOrId: gdriveLinkInput,
-        webhookUrl: gdriveWebhookInput,
-        filename,
-        payloadJson
+      const res = await uploadDirectToGoogleDrive({
+        filename: `gnoted_sync_${Date.now()}.json`,
+        payloadJson: JSON.stringify(activeNotesList, null, 2)
       });
 
-      setBackupStatus(result.message);
-      setActiveToastAlert(result.message);
-      setTimeout(() => setActiveToastAlert(''), 5000);
+      setBackupStatus(res.message);
     } catch (e: any) {
-      console.error('Google Drive Webhook sync error:', e);
-      setBackupStatus(`Google Drive Webhook upload failed: ${e?.message || 'Error'}`);
+      console.error('Sync error:', e);
+      setBackupStatus(`Sync error: ${e?.message || 'Unknown failure'}`);
     } finally {
       setIsSyncingGDrive(false);
     }
   };
 
-  const handleOpenHistoryWithAuth = async () => {
-    setIsHistoryAuthenticated(true);
+  const handleOpenHistoryWithAuth = () => {
     setShowHistoryView(true);
   };
 
@@ -818,7 +740,7 @@ export default function App() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `secure_vault_backup_${Date.now()}.json`;
+      a.download = `gnoted_backup_${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
       setBackupStatus('Encrypted backup downloaded successfully.');
@@ -877,22 +799,30 @@ export default function App() {
     return matchesTag && matchesSearch;
   });
 
-  // ────────────────── REGISTRATION PROCESS (PASSWORD-ONLY) ──────────────────
+  const formatDueDateDisplay = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // ────────────────── REGISTRATION PROCESS ──────────────────
   if (!isRegistered) {
     return (
-      <div className="min-h-screen bg-[#080A10] text-[#F8FAFC] flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
-        {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
+      <div className="min-h-screen bg-[#08080A] text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
         <ToastNotificationBanner 
           message={activeToastAlert} 
           onClose={() => setActiveToastAlert('')} 
         />
 
-        <div className="w-full max-w-sm bg-[#121722] border border-[#1E293B] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
-          <div className="w-13 h-13 rounded-2xl bg-[#06B6D4]/15 flex items-center justify-center text-[#38BDF8] mb-5 border border-[#06B6D4]/30">
+        <div className="w-full max-w-sm bg-[#111216] border border-[#27272A] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
+          <div className="w-13 h-13 rounded-2xl bg-[#F59E0B]/15 flex items-center justify-center text-[#F59E0B] mb-5 border border-[#F59E0B]/30">
             <ShieldCheck className="w-7 h-7 stroke-[2]" />
           </div>
 
-          <h1 className="text-xl font-bold mb-6 tracking-widest text-[#F8FAFC] uppercase">GNOTED</h1>
+          <h1 className="text-xl font-bold mb-6 tracking-widest text-white uppercase">GNOTED</h1>
 
           {regError && (
             <div className="bg-[#FF3B30]/10 border border-[#FF3B30]/25 rounded-xl p-2.5 mb-4 text-xs text-[#FF3B30] w-full text-left">
@@ -907,12 +837,12 @@ export default function App() {
                 placeholder="Passcode"
                 value={regPassword}
                 onChange={(e) => setRegPassword(e.target.value)}
-                className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl pl-4 pr-10 py-3 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#06B6D4]"
+                className="w-full bg-[#08080A] border border-[#27272A] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#F59E0B]"
               />
               <button
                 type="button"
                 onClick={() => setShowPasswordText(!showPasswordText)}
-                className="absolute right-3 top-3.5 text-[#94A3B8] hover:text-[#F8FAFC]"
+                className="absolute right-3 top-3.5 text-zinc-400 hover:text-white"
               >
                 {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -925,22 +855,22 @@ export default function App() {
                 value={regConfirmPassword}
                 onChange={(e) => setRegConfirmPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateVaultPassword()}
-                className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl pl-4 pr-10 py-3 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#06B6D4]"
+                className="w-full bg-[#08080A] border border-[#27272A] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#F59E0B]"
               />
               <button
                 type="button"
                 onClick={() => setShowPasswordText(!showPasswordText)}
-                className="absolute right-3 top-3.5 text-[#94A3B8] hover:text-[#F8FAFC]"
+                className="absolute right-3 top-3.5 text-zinc-400 hover:text-white"
               >
                 {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
 
             <div className="w-full text-left mt-1">
-              <label className="text-xs font-medium text-[#94A3B8] block mb-1.5">
+              <label className="text-xs font-medium text-zinc-400 block mb-1.5">
                 Secret Verification Shape:
               </label>
-              <div className="grid grid-cols-4 gap-2 bg-[#080A10] p-2.5 rounded-xl border border-[#1E293B]">
+              <div className="grid grid-cols-4 gap-2 bg-[#08080A] p-2.5 rounded-xl border border-[#27272A]">
                 {AVAILABLE_SHAPES.map((s) => (
                   <button
                     key={s.id}
@@ -948,12 +878,12 @@ export default function App() {
                     onClick={() => setRegSelectedShape(s.id)}
                     className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
                       regSelectedShape === s.id
-                        ? 'border-[#06B6D4] bg-[#06B6D4]/20 scale-105 shadow-md'
-                        : 'border-[#1E293B] hover:border-slate-700 bg-[#121722]'
+                        ? 'border-[#F59E0B] bg-[#F59E0B]/20 scale-105 shadow-md shadow-[#F59E0B]/20'
+                        : 'border-[#27272A] hover:border-zinc-700 bg-[#111216]'
                     }`}
                   >
                     <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
-                    <span className="text-[9px] text-[#94A3B8] mt-1 truncate max-w-full leading-tight">
+                    <span className="text-[9px] text-zinc-400 mt-1 truncate max-w-full leading-tight">
                       {s.label.split(' ')[0]}
                     </span>
                   </button>
@@ -962,7 +892,7 @@ export default function App() {
             </div>
 
             <div className="w-full text-left">
-              <label className="text-xs font-medium text-[#94A3B8] block mb-1.5">
+              <label className="text-xs font-medium text-zinc-400 block mb-1.5">
                 Required Consecutive Taps:
               </label>
               <div className="flex items-center gap-1.5">
@@ -973,8 +903,8 @@ export default function App() {
                     onClick={() => setRegSelectedTaps(num)}
                     className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
                       regSelectedTaps === num
-                        ? 'bg-[#06B6D4] text-white border-[#06B6D4] shadow-md'
-                        : 'bg-[#080A10] text-[#94A3B8] border-[#1E293B] hover:text-[#F8FAFC]'
+                        ? 'bg-[#F59E0B] text-black border-[#F59E0B] shadow-md shadow-[#F59E0B]/20'
+                        : 'bg-[#08080A] text-zinc-400 border-[#27272A] hover:text-white'
                     }`}
                   >
                     {num}×
@@ -985,9 +915,9 @@ export default function App() {
 
             <button
               onClick={handleCreateVaultPassword}
-              className="w-full bg-[#06B6D4] hover:bg-[#0284C7] active:scale-[0.98] transition-all text-white font-medium py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm mt-2"
+              className="w-full bg-[#F59E0B] hover:bg-[#D97706] active:scale-[0.98] transition-all text-black font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm mt-2"
             >
-              <Key className="w-4 h-4" />
+              <Key className="w-4 h-4 text-black" />
               Create Account & Enter GNOTED
             </button>
           </div>
@@ -999,29 +929,27 @@ export default function App() {
   // ────────────────── ABSTRACT ART WALLPAPER SCREEN (STEALTH PATTERN GATE) ──────────────────
   if (!isUnlocked && isPasswordPassed) {
     const wallpaperShapes = [
-      { id: 'blue_circle', color: '#007AFF', shape: 'circle', top: '10%', left: '12%', size: 76, rotate: 0, opacity: 0.85 },
-      { id: 'rose_crescent', color: '#FF375F', shape: 'crescent', top: '18%', left: '72%', size: 88, rotate: -35, opacity: 0.8 },
-      { id: 'gold_star', color: '#FFD60A', shape: 'star', top: '14%', left: '44%', size: 64, rotate: 24, opacity: 0.9 },
-      { id: 'purple_hexagon', color: '#AF52DE', shape: 'hexagon', top: '40%', left: '16%', size: 94, rotate: -18, opacity: 0.85 },
-      { id: 'orange_pentagon', color: '#06B6D4', shape: 'pentagon', top: '46%', left: '60%', size: 100, rotate: 12, opacity: 0.95 },
-      { id: 'green_square', color: '#34C759', shape: 'square', top: '30%', left: '80%', size: 70, rotate: 38, opacity: 0.8 },
-      { id: 'red_triangle', color: '#FF3B30', shape: 'triangle', top: '66%', left: '10%', size: 92, rotate: -22, opacity: 0.85 },
-      { id: 'yellow_diamond', color: '#FFCC00', shape: 'diamond', top: '76%', left: '42%', size: 78, rotate: 15, opacity: 0.9 },
-      { id: 'teal_octagon', color: '#5AC8FA', shape: 'octagon', top: '80%', left: '78%', size: 74, rotate: -12, opacity: 0.85 },
-      { id: 'pink_heart', color: '#FF2D55', shape: 'heart', top: '34%', left: '38%', size: 68, rotate: 18, opacity: 0.8 },
-      { id: 'cyan_oval', color: '#30B0C7', shape: 'oval', top: '60%', left: '72%', size: 84, rotate: -40, opacity: 0.85 },
-      { id: 'mint_cross', color: '#30D158', shape: 'cross', top: '72%', left: '26%', size: 70, rotate: 28, opacity: 0.8 }
+      { id: 'blue_circle', color: '#3B82F6', shape: 'circle', top: '10%', left: '12%', size: 76, rotate: 0, opacity: 0.85 },
+      { id: 'rose_crescent', color: '#F43F5E', shape: 'crescent', top: '18%', left: '72%', size: 88, rotate: -35, opacity: 0.8 },
+      { id: 'gold_star', color: '#F59E0B', shape: 'star', top: '14%', left: '44%', size: 64, rotate: 24, opacity: 0.9 },
+      { id: 'purple_hexagon', color: '#A855F7', shape: 'hexagon', top: '40%', left: '16%', size: 94, rotate: -18, opacity: 0.85 },
+      { id: 'orange_pentagon', color: '#F59E0B', shape: 'pentagon', top: '46%', left: '60%', size: 100, rotate: 12, opacity: 0.95 },
+      { id: 'green_square', color: '#10B981', shape: 'square', top: '30%', left: '80%', size: 70, rotate: 38, opacity: 0.8 },
+      { id: 'red_triangle', color: '#EF4444', shape: 'triangle', top: '66%', left: '10%', size: 92, rotate: -22, opacity: 0.85 },
+      { id: 'yellow_diamond', color: '#FBBF24', shape: 'diamond', top: '76%', left: '42%', size: 78, rotate: 15, opacity: 0.9 },
+      { id: 'teal_octagon', color: '#14B8A6', shape: 'octagon', top: '80%', left: '78%', size: 74, rotate: -12, opacity: 0.85 },
+      { id: 'pink_heart', color: '#EC4899', shape: 'heart', top: '34%', left: '38%', size: 68, rotate: 18, opacity: 0.8 },
+      { id: 'cyan_oval', color: '#06B6D4', shape: 'oval', top: '60%', left: '72%', size: 84, rotate: -40, opacity: 0.85 },
+      { id: 'mint_cross', color: '#34D399', shape: 'cross', top: '72%', left: '26%', size: 70, rotate: 28, opacity: 0.8 }
     ];
 
     return (
-      <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-[#0B101D] via-[#070B14] to-[#04060A] overflow-hidden select-none z-50 font-sans">
-        {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
+      <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-[#08080A] via-[#0E0F14] to-[#040405] overflow-hidden select-none z-50 font-sans">
         <ToastNotificationBanner 
           message={activeToastAlert} 
           onClose={() => setActiveToastAlert('')} 
         />
 
-        {/* ASYMMETRICAL WALLPAPER SHAPES */}
         <div className="relative w-full h-full max-w-md mx-auto">
           {wallpaperShapes.map((item) => {
             const currentRotation = item.rotate + (shapeRotations[item.id] || 0);
@@ -1051,22 +979,21 @@ export default function App() {
     );
   }
 
-  // ────────────────── LOCK SCREEN (PASSWORD-ONLY RETURNING USER) ──────────────────
+  // ────────────────── LOCK SCREEN ──────────────────
   if (!isUnlocked && !isPasswordPassed) {
     return (
-      <div className="min-h-screen bg-[#080A10] text-[#F8FAFC] flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
-        {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
+      <div className="min-h-screen bg-[#08080A] text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
         <ToastNotificationBanner 
           message={activeToastAlert} 
           onClose={() => setActiveToastAlert('')} 
         />
 
-        <div className="w-full max-w-sm bg-[#121722] border border-[#1E293B] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
-          <div className="w-13 h-13 rounded-2xl bg-[#06B6D4]/15 flex items-center justify-center text-[#38BDF8] mb-5 border border-[#06B6D4]/30">
+        <div className="w-full max-w-sm bg-[#111216] border border-[#27272A] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
+          <div className="w-13 h-13 rounded-2xl bg-[#F59E0B]/15 flex items-center justify-center text-[#F59E0B] mb-5 border border-[#F59E0B]/30">
             <Lock className="w-6 h-6 stroke-[2]" />
           </div>
 
-          <h1 className="text-xl font-bold mb-6 tracking-widest text-[#F8FAFC] uppercase">GNOTED</h1>
+          <h1 className="text-xl font-bold mb-6 tracking-widest text-white uppercase">GNOTED</h1>
 
           {lockError && (
             <div className="bg-[#FF3B30]/10 border border-[#FF3B30]/25 rounded-xl p-2.5 mb-4 text-xs text-[#FF3B30] w-full text-left">
@@ -1081,12 +1008,12 @@ export default function App() {
               value={enteredPassword}
               onChange={(e) => setEnteredPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLoginPasswordStepSubmit()}
-              className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl pl-4 pr-10 py-3 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#06B6D4]"
+              className="w-full bg-[#08080A] border border-[#27272A] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#F59E0B]"
             />
             <button
               type="button"
               onClick={() => setShowPasswordText(!showPasswordText)}
-              className="absolute right-3 top-3.5 text-[#94A3B8] hover:text-[#F8FAFC]"
+              className="absolute right-3 top-3.5 text-zinc-400 hover:text-white"
             >
               {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -1094,9 +1021,9 @@ export default function App() {
 
           <button
             onClick={handleLoginPasswordStepSubmit}
-            className="w-full bg-[#06B6D4] hover:bg-[#0284C7] active:scale-[0.98] transition-all text-white font-medium py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm"
+            className="w-full bg-[#F59E0B] hover:bg-[#D97706] active:scale-[0.98] transition-all text-black font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm"
           >
-            <Unlock className="w-4 h-4" />
+            <Unlock className="w-4 h-4 text-black" />
             Unlock
           </button>
         </div>
@@ -1107,21 +1034,21 @@ export default function App() {
   // DEDICATED NOTE DETAIL VIEW SCREEN
   if (selectedNoteForView) {
     return (
-      <div className="min-h-screen bg-black text-white p-4 max-w-md mx-auto font-sans flex flex-col justify-between">
+      <div className="min-h-screen bg-[#08080A] text-white p-4 max-w-md mx-auto font-sans flex flex-col justify-between">
         <div>
-          <header className="flex items-center justify-between pt-2 pb-4 border-b border-[#2C2C2E]">
+          <header className="flex items-center justify-between pt-2 pb-4 border-b border-[#27272A]">
             <button 
               onClick={() => setSelectedNoteForView(null)}
-              className="w-9 h-9 rounded-full bg-[#1C1C1E] border border-[#2C2C2E] flex items-center justify-center text-[#8E8E93] hover:text-white"
+              className="w-9 h-9 rounded-full bg-[#111216] border border-[#27272A] flex items-center justify-center text-zinc-400 hover:text-white"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <span className="text-xs font-semibold text-[#FF6B00] bg-[#FF6B00]/15 px-3 py-1 rounded-pill">
+            <span className="text-xs font-bold text-[#F59E0B] bg-[#F59E0B]/15 border border-[#F59E0B]/30 px-3 py-1 rounded-pill">
               {selectedNoteForView.categoryTag}
             </span>
             <button
               onClick={() => handleArchiveNote(selectedNoteForView)}
-              className="w-9 h-9 rounded-full bg-[#1C1C1E] border border-[#2C2C2E] flex items-center justify-center text-[#8E8E93] hover:text-[#FF3B30]"
+              className="w-9 h-9 rounded-full bg-[#111216] border border-[#27272A] flex items-center justify-center text-zinc-400 hover:text-[#FF3B30]"
               title="Archive Note"
             >
               <Archive className="w-4.5 h-4.5" />
@@ -1132,7 +1059,7 @@ export default function App() {
             <h1 className="text-2xl font-bold text-white tracking-tight mb-2">
               {selectedNoteForView.title}
             </h1>
-            <p className="text-xs text-[#8E8E93]">
+            <p className="text-xs text-zinc-400">
               Last updated: {new Date(selectedNoteForView.updatedAt).toLocaleString(undefined, {
                 month: 'short',
                 day: 'numeric',
@@ -1143,7 +1070,7 @@ export default function App() {
             </p>
           </div>
 
-          <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-5 min-h-[220px]">
+          <div className="bg-[#111216] border border-[#27272A] rounded-card p-5 min-h-[220px]">
             <p className="text-sm text-white leading-relaxed whitespace-pre-wrap">
               {selectedNoteForView.content}
             </p>
@@ -1156,9 +1083,9 @@ export default function App() {
               setEditingNote(selectedNoteForView);
               setIsEditorOpen(true);
             }}
-            className="flex-1 bg-white hover:bg-gray-100 text-black font-semibold py-3.5 rounded-pill shadow-lg flex items-center justify-center gap-2 text-sm"
+            className="flex-1 bg-[#F59E0B] hover:bg-[#D97706] text-black font-bold py-3.5 rounded-pill shadow-lg flex items-center justify-center gap-2 text-sm"
           >
-            <Edit3 className="w-4 h-4" />
+            <Edit3 className="w-4 h-4 text-black" />
             Edit Note
           </button>
         </div>
@@ -1168,8 +1095,7 @@ export default function App() {
 
   // MAIN DASHBOARD
   return (
-    <div className="min-h-screen bg-[#080A10] text-[#F8FAFC] p-4 max-w-md mx-auto pb-32 font-sans relative">
-      {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
+    <div className="min-h-screen bg-[#08080A] text-white p-4 max-w-md mx-auto pb-32 font-sans relative">
       <ToastNotificationBanner 
         message={activeToastAlert} 
         onClose={() => setActiveToastAlert('')} 
@@ -1177,23 +1103,23 @@ export default function App() {
 
       <header className="flex items-center justify-between pt-2 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-[#06B6D4]/15 flex items-center justify-center text-[#38BDF8] border border-[#06B6D4]/30 font-bold text-xs uppercase">
+          <div className="w-9 h-9 rounded-full bg-[#F59E0B]/15 flex items-center justify-center text-[#F59E0B] border border-[#F59E0B]/30 font-bold text-xs uppercase">
             {registeredEmail ? registeredEmail[0] : <User className="w-5 h-5" />}
           </div>
-          <span className="text-base font-bold tracking-wider text-[#F8FAFC]">GNOTED</span>
+          <span className="text-base font-bold tracking-wider text-white">GNOTED</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleSyncAllNotesToGDrive}
             disabled={isSyncingGDrive}
-            className="w-9 h-9 rounded-full bg-[#121722] border border-[#1E293B] flex items-center justify-center text-[#38BDF8] hover:text-[#F8FAFC] disabled:opacity-50 transition-colors"
+            className="w-9 h-9 rounded-full bg-[#111216] border border-[#27272A] flex items-center justify-center text-[#F59E0B] hover:text-white disabled:opacity-50 transition-colors"
             title="Upload Directly to Google Drive Webhook"
           >
             <FolderSync className={`w-4.5 h-4.5 ${isSyncingGDrive ? 'animate-spin' : ''}`} />
           </button>
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="w-9 h-9 rounded-full bg-[#121722] border border-[#1E293B] flex items-center justify-center text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+            className="w-9 h-9 rounded-full bg-[#111216] border border-[#27272A] flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
             title="Settings & Security"
           >
             <Settings className="w-4 h-4" />
@@ -1202,7 +1128,7 @@ export default function App() {
             onClick={() => {
               setIsUnlocked(false);
             }}
-            className="w-9 h-9 rounded-full bg-[#121722] border border-[#1E293B] flex items-center justify-center text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+            className="w-9 h-9 rounded-full bg-[#111216] border border-[#27272A] flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
             title="Lock App"
           >
             <Lock className="w-4 h-4" />
@@ -1211,7 +1137,7 @@ export default function App() {
       </header>
 
       <div className="my-2">
-        <h1 className="text-2xl font-bold tracking-tight text-[#F8FAFC]">
+        <h1 className="text-2xl font-bold tracking-tight text-white">
           {activeNavTab === 'notes' ? 'My Notes' : 'To-Do Tasks'}
         </h1>
       </div>
@@ -1220,13 +1146,13 @@ export default function App() {
       {activeNavTab === 'notes' && (
         <div>
           <div className="relative my-4">
-            <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-[#64748B]" />
+            <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-zinc-500" />
             <input 
               type="text"
               placeholder="Search notes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#121722] border border-[#1E293B] rounded-2xl pl-10 pr-4 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#06B6D4] transition-colors"
+              className="w-full bg-[#111216] border border-[#27272A] rounded-2xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#F59E0B] transition-colors"
             />
           </div>
 
@@ -1235,10 +1161,10 @@ export default function App() {
               <button
                 key={tag}
                 onClick={() => setSelectedTag(tag)}
-                className={`px-4 py-2 rounded-pill text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-4 py-2 rounded-pill text-xs font-bold whitespace-nowrap transition-all ${
                   selectedTag === tag 
-                    ? 'bg-[#06B6D4] text-white shadow-md shadow-[#06B6D4]/20' 
-                    : 'bg-[#121722] text-[#F8FAFC] border border-[#1E293B] hover:bg-[#1A2332]'
+                    ? 'bg-[#F59E0B] text-black shadow-md shadow-[#F59E0B]/20' 
+                    : 'bg-[#111216] text-white border border-[#27272A] hover:bg-[#1A1B22]'
                 }`}
               >
                 {tag}
@@ -1256,11 +1182,11 @@ export default function App() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     onClick={() => setSelectedNoteForView(note)}
-                    className="bg-[#121722] border border-[#1E293B] rounded-2xl p-4 flex flex-col justify-between min-h-[140px] cursor-pointer hover:border-[#06B6D4]/60 transition-all active:scale-[0.98]"
+                    className="bg-[#111216] border border-[#27272A] rounded-2xl p-4 flex flex-col justify-between min-h-[140px] cursor-pointer hover:border-[#F59E0B]/60 transition-all active:scale-[0.98]"
                   >
                     <div>
                       <div className="flex items-start justify-between mb-2">
-                        <span className="text-[11px] font-medium text-[#38BDF8] bg-[#06B6D4]/15 px-2 py-0.5 rounded-md">
+                        <span className="text-[11px] font-medium text-[#F59E0B] bg-[#F59E0B]/15 border border-[#F59E0B]/30 px-2 py-0.5 rounded-md">
                           {note.categoryTag}
                         </span>
                         <button
@@ -1268,28 +1194,28 @@ export default function App() {
                             e.stopPropagation();
                             handleArchiveNote(note);
                           }}
-                          className="text-[#64748B] hover:text-[#FF3B30] p-0.5"
+                          className="text-zinc-500 hover:text-[#FF3B30] p-0.5"
                           title="Archive Note"
                         >
                           <Archive className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
-                      <h3 className="font-semibold text-sm text-[#F8FAFC] mb-1 leading-snug line-clamp-1">
+                      <h3 className="font-semibold text-sm text-white mb-1 leading-snug line-clamp-1">
                         {note.title}
                       </h3>
 
-                      <p className="text-xs text-[#94A3B8] leading-relaxed line-clamp-2">
+                      <p className="text-xs text-zinc-400 leading-relaxed line-clamp-2">
                         {note.isSensitive ? '••••••••••••' : note.content}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between pt-3 mt-2 border-t border-[#1E293B]">
-                      <span className="text-[10px] text-[#64748B]">
+                    <div className="flex items-center justify-between pt-3 mt-2 border-t border-[#27272A]">
+                      <span className="text-[10px] text-zinc-500">
                         {new Date(note.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                       </span>
                       {note.isSensitive && (
-                        <span className="text-[10px] text-[#38BDF8] font-medium">
+                        <span className="text-[10px] text-[#F59E0B] font-medium">
                           Sensitive
                         </span>
                       )}
@@ -1301,8 +1227,8 @@ export default function App() {
           </div>
 
           {filteredNotes.length === 0 && (
-            <div className="text-center py-16 text-[#64748B]">
-              <p className="text-sm font-medium text-[#94A3B8]">No {selectedTag} notes</p>
+            <div className="text-center py-16 text-zinc-500">
+              <p className="text-sm font-medium text-zinc-400">No {selectedTag} notes</p>
               <p className="text-xs mt-1">Tap 'Add Note' below to create one.</p>
             </div>
           )}
@@ -1320,9 +1246,9 @@ export default function App() {
                 });
                 setIsEditorOpen(true);
               }}
-              className="w-full bg-gradient-to-r from-[#06B6D4] to-[#0284C7] hover:from-[#0891B2] hover:to-[#0369A1] text-white font-medium py-3.5 rounded-pill shadow-xl shadow-[#06B6D4]/25 flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-all"
+              className="w-full bg-[#F59E0B] hover:bg-[#D97706] text-black font-bold py-3.5 rounded-pill shadow-xl shadow-[#F59E0B]/25 flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-all"
             >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <Plus className="w-4 h-4 stroke-[2.5] text-black" />
               Add Note
             </button>
           </div>
@@ -1333,14 +1259,14 @@ export default function App() {
       {activeNavTab === 'todos' && (
         <div className="mt-2 w-full overflow-hidden">
           {notificationPermission !== 'granted' && (
-            <div className="bg-[#121722] border border-[#06B6D4]/40 rounded-2xl p-3 mb-4 flex items-center justify-between">
+            <div className="bg-[#111216] border border-[#F59E0B]/40 rounded-2xl p-3 mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <Bell className="w-4 h-4 text-[#38BDF8] shrink-0" />
+                <Bell className="w-4 h-4 text-[#F59E0B] shrink-0" />
                 <span className="text-xs text-white font-medium">Enable task deadline notifications</span>
               </div>
               <button
                 onClick={handleRequestNotificationPermission}
-                className="bg-[#06B6D4] hover:bg-[#0284C7] text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm"
+                className="bg-[#F59E0B] hover:bg-[#D97706] text-black font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm"
               >
                 Enable
               </button>
@@ -1354,24 +1280,24 @@ export default function App() {
             </div>
           )}
 
-          <div className="bg-[#121722] border border-[#1E293B] rounded-2xl p-3.5 flex flex-col gap-3 mb-4 w-full">
+          <div className="bg-[#111216] border border-[#27272A] rounded-2xl p-3.5 flex flex-col gap-3 mb-4 w-full">
             <input 
               type="text"
               placeholder="Add a new task title..."
               value={newTodoTitle}
               onChange={(e) => setNewTodoTitle(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSaveTodo()}
-              className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl px-3.5 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#06B6D4]"
+              className="w-full bg-[#08080A] border border-[#27272A] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#F59E0B]"
             />
             
             <div className="grid grid-cols-3 gap-2 w-full">
               <div 
                 onClick={openDatePicker}
-                className="bg-[#080A10] border border-[#1E293B] hover:border-[#06B6D4] rounded-xl px-2 py-2 flex items-center justify-center gap-1.5 cursor-pointer relative transition-colors"
+                className="bg-[#08080A] border border-[#27272A] hover:border-[#F59E0B] rounded-xl px-2 py-2 flex items-center justify-center gap-1.5 cursor-pointer relative transition-colors"
                 title="Select Task Deadline Date & Time"
               >
-                <Clock className="w-3.5 h-3.5 text-[#38BDF8] shrink-0" />
-                <span className="text-[10px] font-medium text-[#F8FAFC] truncate">
+                <Clock className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
+                <span className="text-[10px] font-medium text-white truncate">
                   {newTodoDueDate ? formatDueDateDisplay(newTodoDueDate) : 'Date & Time'}
                 </span>
                 <input 
@@ -1387,21 +1313,21 @@ export default function App() {
                 <select
                   value={newTodoPriority}
                   onChange={(e: any) => setNewTodoPriority(e.target.value)}
-                  className="w-full bg-[#080A10] border border-[#1E293B] text-[10px] text-[#F8FAFC] font-medium rounded-xl px-2 py-2.5 focus:outline-none cursor-pointer text-center appearance-none"
+                  className="w-full bg-[#08080A] border border-[#27272A] text-[10px] text-white font-medium rounded-xl px-2 py-2.5 focus:outline-none cursor-pointer text-center appearance-none"
                 >
-                  <option value="urgent" className="text-left">🔴 Urgent</option>
-                  <option value="important" className="text-left">🔵 Important</option>
-                  <option value="neutral" className="text-left">⚪ Neutral</option>
-                  <option value="if_time" className="text-left">🟢 Someday</option>
+                  <option value="urgent" className="text-left bg-[#111216]">🔴 Urgent</option>
+                  <option value="important" className="text-left bg-[#111216]">🟡 Important</option>
+                  <option value="neutral" className="text-left bg-[#111216]">🔵 Neutral</option>
+                  <option value="if_time" className="text-left bg-[#111216]">🟢 Someday</option>
                 </select>
-                <ChevronDown className="w-3 h-3 text-[#94A3B8] absolute right-2 top-3 pointer-events-none" />
+                <ChevronDown className="w-3 h-3 text-zinc-400 absolute right-2 top-3 pointer-events-none" />
               </div>
 
               <button
                 onClick={handleSaveTodo}
-                className="bg-[#06B6D4] hover:bg-[#0284C7] text-white py-2 rounded-xl text-[11px] font-semibold shadow-md active:scale-95 transition-all w-full flex items-center justify-center gap-1"
+                className="bg-[#F59E0B] hover:bg-[#D97706] text-black py-2 rounded-xl text-[11px] font-bold shadow-md active:scale-95 transition-all w-full flex items-center justify-center gap-1"
               >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                <Plus className="w-3.5 h-3.5 stroke-[2.5] text-black" />
                 Add
               </button>
             </div>
@@ -1420,18 +1346,18 @@ export default function App() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="bg-[#121722] border border-[#1E293B] rounded-2xl p-3.5 flex items-center justify-between group"
+                    className="bg-[#111216] border border-[#27272A] rounded-2xl p-3.5 flex items-center justify-between group"
                   >
                     <div 
                       onClick={() => handleToggleTodo(todo)}
                       className="flex items-center gap-3 flex-1 cursor-pointer"
                     >
-                      <div className="w-5 h-5 rounded-md border border-[#1E293B] bg-[#080A10] flex items-center justify-center hover:border-[#06B6D4]">
-                        <Check className="w-3.5 h-3.5 stroke-[3] text-transparent hover:text-[#06B6D4]" />
+                      <div className="w-5 h-5 rounded-md border border-[#27272A] bg-[#08080A] flex items-center justify-center hover:border-[#F59E0B]">
+                        <Check className="w-3.5 h-3.5 stroke-[3] text-transparent hover:text-[#F59E0B]" />
                       </div>
                       <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-[#F8FAFC]">
+                          <span className="text-sm font-medium text-white">
                             {todo.title}
                           </span>
                           <span 
@@ -1444,9 +1370,9 @@ export default function App() {
 
                         {todo.dueDate && (
                           <div className="flex items-center gap-1 mt-0.5">
-                            <Clock className="w-3 h-3 text-[#94A3B8]" />
+                            <Clock className="w-3 h-3 text-zinc-400" />
                             <span className={`text-[10px] font-medium ${
-                              isDueSoonOrOverdue ? 'text-[#FF3B30]' : 'text-[#94A3B8]'
+                              isDueSoonOrOverdue ? 'text-[#FF3B30]' : 'text-zinc-400'
                             }`}>
                               Due: {formatDueDateDisplay(todo.dueDate)} {isDueSoonOrOverdue ? '(Due Now)' : ''}
                             </span>
@@ -1457,7 +1383,7 @@ export default function App() {
 
                     <button
                       onClick={() => handleToggleTodo(todo)}
-                      className="text-xs text-[#38BDF8] bg-[#06B6D4]/10 hover:bg-[#06B6D4]/20 px-2.5 py-1 rounded-lg font-medium"
+                      className="text-xs text-[#F59E0B] bg-[#F59E0B]/15 hover:bg-[#F59E0B]/25 px-2.5 py-1 rounded-lg font-medium"
                     >
                       Done
                     </button>
@@ -1468,8 +1394,8 @@ export default function App() {
           </div>
 
           {activeTodos.length === 0 && (
-            <div className="text-center py-16 text-[#64748B]">
-              <p className="text-sm font-medium text-[#94A3B8]">No active tasks</p>
+            <div className="text-center py-16 text-zinc-500">
+              <p className="text-sm font-medium text-zinc-400">No active tasks</p>
               <p className="text-xs mt-1">Add a task above. Finished tasks move to History.</p>
             </div>
           )}
@@ -1477,11 +1403,11 @@ export default function App() {
       )}
 
       {/* BOTTOM NAVIGATION BAR */}
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#080A10]/95 backdrop-blur-md border-t border-[#1E293B] px-6 py-2.5 flex items-center justify-around z-40">
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#08080A]/95 backdrop-blur-md border-t border-[#27272A] px-6 py-2.5 flex items-center justify-around z-40">
         <button
           onClick={() => setActiveNavTab('notes')}
           className={`flex flex-col items-center gap-1 py-1 px-8 rounded-xl transition-all ${
-            activeNavTab === 'notes' ? 'text-[#06B6D4]' : 'text-[#94A3B8] hover:text-[#F8FAFC]'
+            activeNavTab === 'notes' ? 'text-[#F59E0B]' : 'text-zinc-400 hover:text-white'
           }`}
         >
           <FileText className="w-5 h-5" />
@@ -1491,7 +1417,7 @@ export default function App() {
         <button
           onClick={() => setActiveNavTab('todos')}
           className={`flex flex-col items-center gap-1 py-1 px-8 rounded-xl transition-all ${
-            activeNavTab === 'todos' ? 'text-[#06B6D4]' : 'text-[#94A3B8] hover:text-[#F8FAFC]'
+            activeNavTab === 'todos' ? 'text-[#F59E0B]' : 'text-zinc-400 hover:text-white'
           }`}
         >
           <CheckSquare className="w-5 h-5" />
@@ -1507,15 +1433,15 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#121722] border border-[#1E293B] rounded-2xl w-full max-w-sm p-5 shadow-2xl"
+              className="bg-[#111216] border border-[#27272A] rounded-2xl w-full max-w-sm p-5 shadow-2xl"
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold text-[#F8FAFC]">
+                <h2 className="text-base font-bold text-white">
                   {editingNote.id ? 'Edit Note' : 'Add Encrypted Note'}
                 </h2>
                 <button 
                   onClick={() => setIsEditorOpen(false)}
-                  className="text-[#94A3B8] hover:text-[#F8FAFC]"
+                  className="text-zinc-400 hover:text-white"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1532,7 +1458,7 @@ export default function App() {
                 placeholder="Note Title"
                 value={editingNote.title || ''}
                 onChange={(e) => setEditingNote({ ...editingNote, title: e.target.value })}
-                className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl px-3.5 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] mb-3 focus:outline-none focus:border-[#06B6D4]"
+                className="w-full bg-[#08080A] border border-[#27272A] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 mb-3 focus:outline-none focus:border-[#F59E0B]"
               />
 
               <textarea
@@ -1540,11 +1466,11 @@ export default function App() {
                 value={editingNote.content || ''}
                 onChange={(e) => setEditingNote({ ...editingNote, content: e.target.value })}
                 rows={4}
-                className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl p-3.5 text-sm text-[#F8FAFC] placeholder-[#64748B] mb-3 focus:outline-none focus:border-[#06B6D4] resize-none"
+                className="w-full bg-[#08080A] border border-[#27272A] rounded-xl p-3.5 text-sm text-white placeholder-zinc-500 mb-3 focus:outline-none focus:border-[#F59E0B] resize-none"
               />
 
               <div className="mb-4">
-                <label className="text-[11px] font-semibold text-[#94A3B8] block mb-1">
+                <label className="text-[11px] font-semibold text-zinc-400 block mb-1">
                   Category Tag:
                 </label>
                 <select
@@ -1554,24 +1480,24 @@ export default function App() {
                     categoryTag: e.target.value,
                     isSensitive: e.target.value === 'Passwords' || e.target.value === 'Private Keys'
                   })}
-                  className="w-full bg-[#080A10] border border-[#1E293B] text-xs text-[#F8FAFC] rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-[#06B6D4]"
+                  className="w-full bg-[#08080A] border border-[#27272A] text-xs text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-[#F59E0B]"
                 >
-                  <option value="Personal">Personal (Visible)</option>
-                  <option value="Passwords">Passwords (Auto-Sensitive)</option>
-                  <option value="Private Keys">Private Keys (Auto-Sensitive)</option>
+                  <option value="Personal" className="bg-[#111216]">Personal (Visible)</option>
+                  <option value="Passwords" className="bg-[#111216]">Passwords (Auto-Sensitive)</option>
+                  <option value="Private Keys" className="bg-[#111216]">Private Keys (Auto-Sensitive)</option>
                 </select>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsEditorOpen(false)}
-                  className="flex-1 py-2.5 rounded-pill border border-[#1E293B] text-[#94A3B8] text-xs font-semibold hover:text-[#F8FAFC]"
+                  className="flex-1 py-2.5 rounded-pill border border-[#27272A] text-zinc-400 text-xs font-semibold hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveNote}
-                  className="flex-1 py-2.5 rounded-pill bg-[#06B6D4] hover:bg-[#0284C7] text-white text-xs font-semibold shadow-md"
+                  className="flex-1 py-2.5 rounded-pill bg-[#F59E0B] hover:bg-[#D97706] text-black text-xs font-bold shadow-md"
                 >
                   Save Note
                 </button>
@@ -1589,28 +1515,27 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#121722] border border-[#1E293B] rounded-2xl w-full max-w-sm p-5 shadow-2xl max-h-[85vh] overflow-y-auto no-scrollbar"
+              className="bg-[#111216] border border-[#27272A] rounded-2xl w-full max-w-sm p-5 shadow-2xl max-h-[85vh] overflow-y-auto no-scrollbar"
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold text-[#F8FAFC] flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-[#38BDF8]" />
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-[#F59E0B]" />
                   GNOTED Settings & Security
                 </h2>
                 <button 
                   onClick={() => {
                     setIsSettingsOpen(false);
                     setShowHistoryView(false);
-                    setIsHistoryAuthenticated(false);
                     setBackupStatus('');
                   }}
-                  className="text-[#94A3B8] hover:text-[#F8FAFC]"
+                  className="text-zinc-400 hover:text-white"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {backupStatus && (
-                <div className="bg-[#06B6D4]/15 border border-[#06B6D4]/30 rounded-xl p-2.5 mb-4 text-xs text-[#38BDF8] leading-relaxed">
+                <div className="bg-[#F59E0B]/15 border border-[#F59E0B]/30 rounded-xl p-2.5 mb-4 text-xs text-[#F59E0B] leading-relaxed">
                   {backupStatus}
                 </div>
               )}
@@ -1619,21 +1544,21 @@ export default function App() {
                 <div className="flex flex-col gap-4">
                   {/* SECTION 1: SECURITY & PASSCODE */}
                   <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#38BDF8] mb-1.5 px-0.5">
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#F59E0B] mb-1.5 px-0.5">
                       Security & Passcode
                     </h3>
-                    <div className="bg-[#080A10] border border-[#1E293B] rounded-xl p-3.5 flex flex-col gap-3">
+                    <div className="bg-[#08080A] border border-[#27272A] rounded-xl p-3.5 flex flex-col gap-3">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-[#F8FAFC] flex items-center gap-1.5">
-                          <KeyRound className="w-4 h-4 text-[#38BDF8]" />
+                        <label className="text-xs font-semibold text-white flex items-center gap-1.5">
+                          <KeyRound className="w-4 h-4 text-[#F59E0B]" />
                           GNOTED Security & Verification
                         </label>
                         <button
                           onClick={() => setIsEditingPassword(!isEditingPassword)}
                           className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
                             isEditingPassword 
-                              ? 'bg-[#06B6D4] text-white' 
-                              : 'bg-[#121722] border border-[#1E293B] text-[#94A3B8] hover:text-[#F8FAFC]'
+                              ? 'bg-[#F59E0B] text-black font-bold' 
+                              : 'bg-[#111216] border border-[#27272A] text-zinc-400 hover:text-white'
                           }`}
                           title={isEditingPassword ? 'Collapse Settings' : 'Edit Security Settings'}
                         >
@@ -1643,15 +1568,15 @@ export default function App() {
 
                       {/* EXPANDED EDIT DETAILS FORM */}
                       {isEditingPassword && (
-                        <div className="flex flex-col gap-3 pt-2.5 border-t border-[#1E293B]">
+                        <div className="flex flex-col gap-3 pt-2.5 border-t border-[#27272A]">
                           {passwordChangeStatus && (
-                            <span className={`text-[11px] font-medium ${passwordChangeStatus.includes('must be') ? 'text-[#FF3B30]' : 'text-[#34C759]'}`}>
+                            <span className={`text-[11px] font-medium ${passwordChangeStatus.includes('must be') ? 'text-[#FF3B30]' : 'text-[#10B981]'}`}>
                               {passwordChangeStatus}
                             </span>
                           )}
 
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-[#94A3B8]">
+                            <label className="text-[11px] font-semibold text-zinc-400">
                               Update Passcode (Optional):
                             </label>
                             <input
@@ -1659,15 +1584,15 @@ export default function App() {
                               placeholder="New passcode (optional)"
                               value={newPasswordInput}
                               onChange={(e) => setNewPasswordInput(e.target.value)}
-                              className="bg-[#121722] border border-[#06B6D4] rounded-lg px-3 py-2 text-xs text-[#F8FAFC] placeholder-[#64748B] focus:outline-none"
+                              className="bg-[#111216] border border-[#F59E0B] rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none"
                             />
                           </div>
 
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-[#94A3B8]">
+                            <label className="text-[11px] font-semibold text-zinc-400">
                               Select Secret Verification Shape:
                             </label>
-                            <div className="grid grid-cols-4 gap-2 bg-[#080A10] p-2.5 rounded-xl border border-[#1E293B]">
+                            <div className="grid grid-cols-4 gap-2 bg-[#08080A] p-2.5 rounded-xl border border-[#27272A]">
                               {AVAILABLE_SHAPES.map((s) => (
                                 <button
                                   key={s.id}
@@ -1675,12 +1600,12 @@ export default function App() {
                                   onClick={() => setTargetShapeId(s.id)}
                                   className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
                                     targetShapeId === s.id
-                                      ? 'border-[#06B6D4] bg-[#06B6D4]/20 scale-105 shadow-md'
-                                      : 'border-[#1E293B] hover:border-slate-700 bg-[#121722]'
+                                      ? 'border-[#F59E0B] bg-[#F59E0B]/20 scale-105 shadow-md shadow-[#F59E0B]/20'
+                                      : 'border-[#27272A] hover:border-zinc-700 bg-[#111216]'
                                   }`}
                                 >
                                   <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
-                                  <span className="text-[9px] text-[#94A3B8] mt-1 truncate max-w-full leading-tight">
+                                  <span className="text-[9px] text-zinc-400 mt-1 truncate max-w-full leading-tight">
                                     {s.label.split(' ')[0]}
                                   </span>
                                 </button>
@@ -1689,7 +1614,7 @@ export default function App() {
                           </div>
 
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-[#94A3B8]">
+                            <label className="text-[11px] font-semibold text-zinc-400">
                               Required Consecutive Taps:
                             </label>
                             <div className="flex items-center gap-1.5">
@@ -1700,8 +1625,8 @@ export default function App() {
                                   onClick={() => setTargetTapRequired(num)}
                                   className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
                                     targetTapRequired === num
-                                      ? 'bg-[#06B6D4] text-white border-[#06B6D4] shadow-md'
-                                      : 'bg-[#121722] text-[#94A3B8] border-[#1E293B] hover:text-[#F8FAFC]'
+                                      ? 'bg-[#F59E0B] text-black border-[#F59E0B] shadow-md shadow-[#F59E0B]/20'
+                                      : 'bg-[#111216] text-zinc-400 border-[#27272A] hover:text-white'
                                   }`}
                                 >
                                   {num}×
@@ -1712,10 +1637,10 @@ export default function App() {
 
                           <button
                             onClick={handleSaveSecuritySettings}
-                            className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 mt-1 ${
+                            className={`w-full py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 mt-1 ${
                               isPasswordSavedFeedback
-                                ? 'bg-[#34C759] text-white'
-                                : 'bg-[#06B6D4] hover:bg-[#0284C7] text-white active:scale-95'
+                                ? 'bg-[#10B981] text-white'
+                                : 'bg-[#F59E0B] hover:bg-[#D97706] text-black active:scale-95'
                             }`}
                           >
                             {isPasswordSavedFeedback ? (
@@ -1734,21 +1659,21 @@ export default function App() {
 
                   {/* SECTION 2: CLOUD & SYNC */}
                   <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#38BDF8] mb-1.5 px-0.5">
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#F59E0B] mb-1.5 px-0.5">
                       Cloud & Integration
                     </h3>
-                    <div className="bg-[#080A10] border border-[#1E293B] rounded-xl p-3.5 flex flex-col gap-3">
+                    <div className="bg-[#08080A] border border-[#27272A] rounded-xl p-3.5 flex flex-col gap-3">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-[#F8FAFC] flex items-center gap-1.5">
-                          <Webhook className="w-4 h-4 text-[#38BDF8]" />
+                        <label className="text-xs font-semibold text-white flex items-center gap-1.5">
+                          <Webhook className="w-4 h-4 text-[#F59E0B]" />
                           Google Drive Webhook Integration
                         </label>
                         <button
                           onClick={() => setIsEditingGDriveConfig(!isEditingGDriveConfig)}
                           className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
                             isEditingGDriveConfig 
-                              ? 'bg-[#06B6D4] text-white' 
-                              : 'bg-[#121722] border border-[#1E293B] text-[#94A3B8] hover:text-[#F8FAFC]'
+                              ? 'bg-[#F59E0B] text-black font-bold' 
+                              : 'bg-[#111216] border border-[#27272A] text-zinc-400 hover:text-white'
                           }`}
                           title={isEditingGDriveConfig ? 'Collapse Settings' : 'Edit Integration Links'}
                         >
@@ -1757,10 +1682,10 @@ export default function App() {
                       </div>
 
                       {isEditingGDriveConfig && (
-                        <div className="flex flex-col gap-3 pt-2.5 border-t border-[#1E293B]">
+                        <div className="flex flex-col gap-3 pt-2.5 border-t border-[#27272A]">
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-[#94A3B8] flex items-center gap-1.5">
-                              <Link className="w-3.5 h-3.5 text-[#38BDF8]" />
+                            <label className="text-[11px] font-semibold text-zinc-400 flex items-center gap-1.5">
+                              <Link className="w-3.5 h-3.5 text-[#F59E0B]" />
                               Google Drive Folder Link
                             </label>
                             <input
@@ -1768,13 +1693,13 @@ export default function App() {
                               placeholder="https://drive.google.com/drive/folders/..."
                               value={gdriveLinkInput}
                               onChange={(e) => setGdriveLinkInput(e.target.value)}
-                              className="bg-[#121722] border border-[#06B6D4] rounded-lg px-3 py-2 text-xs text-[#F8FAFC] placeholder-[#64748B] focus:outline-none"
+                              className="bg-[#111216] border border-[#F59E0B] rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none"
                             />
                           </div>
 
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-[#94A3B8] flex items-center gap-1.5">
-                              <Webhook className="w-3.5 h-3.5 text-[#38BDF8]" />
+                            <label className="text-[11px] font-semibold text-zinc-400 flex items-center gap-1.5">
+                              <Webhook className="w-3.5 h-3.5 text-[#F59E0B]" />
                               Apps Script Webhook URL
                             </label>
                             <input
@@ -1782,16 +1707,16 @@ export default function App() {
                               placeholder="https://script.google.com/macros/s/.../exec"
                               value={gdriveWebhookInput}
                               onChange={(e) => setGdriveWebhookInput(e.target.value)}
-                              className="bg-[#121722] border border-[#06B6D4] rounded-lg px-3 py-2 text-xs text-[#F8FAFC] placeholder-[#64748B] focus:outline-none"
+                              className="bg-[#111216] border border-[#F59E0B] rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none"
                             />
                           </div>
 
                           <button
                             onClick={handleSaveGDriveConfig}
-                            className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-md ${
+                            className={`w-full py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md ${
                               isLinkSavedFeedback
-                                ? 'bg-[#34C759] text-white'
-                                : 'bg-[#06B6D4] hover:bg-[#0284C7] text-white active:scale-95'
+                                ? 'bg-[#10B981] text-white'
+                                : 'bg-[#F59E0B] hover:bg-[#D97706] text-black active:scale-95'
                             }`}
                           >
                             {isLinkSavedFeedback ? (
@@ -1810,50 +1735,50 @@ export default function App() {
                     <button
                       onClick={handleSyncAllNotesToGDrive}
                       disabled={isSyncingGDrive}
-                      className="w-full bg-[#06B6D4] hover:bg-[#0284C7] text-white py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between shadow-md disabled:opacity-50 mt-2 transition-all active:scale-[0.99]"
+                      className="w-full bg-[#F59E0B] hover:bg-[#D97706] text-black font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-between shadow-md disabled:opacity-50 mt-2 transition-all active:scale-[0.99]"
                     >
                       <div className="flex items-center gap-2">
-                        <FolderSync className={`w-4.5 h-4.5 text-white ${isSyncingGDrive ? 'animate-spin' : ''}`} />
+                        <FolderSync className={`w-4.5 h-4.5 text-black ${isSyncingGDrive ? 'animate-spin' : ''}`} />
                         <span>Sync ALL Notes to Google Drive</span>
                       </div>
-                      <CloudUpload className="w-4 h-4 text-white" />
+                      <CloudUpload className="w-4 h-4 text-black" />
                     </button>
                   </div>
 
                   {/* SECTION 3: DATA & HISTORY */}
                   <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#38BDF8] mb-1.5 px-0.5">
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#F59E0B] mb-1.5 px-0.5">
                       Data & History
                     </h3>
-                    <div className="bg-[#080A10] border border-[#1E293B] rounded-xl overflow-hidden divide-y divide-[#1E293B]/60">
+                    <div className="bg-[#08080A] border border-[#27272A] rounded-xl overflow-hidden divide-y divide-[#27272A]">
                       <button
                         onClick={handleOpenHistoryWithAuth}
-                        className="w-full p-3.5 text-[#F8FAFC] text-xs font-semibold flex items-center justify-between hover:bg-[#121722] transition-all active:bg-[#1A2332]"
+                        className="w-full p-3.5 text-white text-xs font-semibold flex items-center justify-between hover:bg-[#111216] transition-all active:bg-[#1A1B22]"
                       >
                         <div className="flex items-center gap-2.5">
-                          <Archive className="w-4 h-4 text-[#38BDF8]" />
+                          <Archive className="w-4 h-4 text-[#F59E0B]" />
                           <span>Archive & Trash History</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-[#94A3B8]">
+                        <div className="flex items-center gap-1.5 text-zinc-400">
                           <span className="text-[10px] font-normal">{archivedNotes.length + archivedTodos.length} items</span>
-                          <Lock className="w-3.5 h-3.5 text-[#94A3B8]" />
+                          <Lock className="w-3.5 h-3.5 text-zinc-400" />
                         </div>
                       </button>
 
                       <button
                         onClick={handleExportBackup}
-                        className="w-full p-3.5 text-[#F8FAFC] text-xs font-semibold flex items-center justify-between hover:bg-[#121722] transition-all active:bg-[#1A2332]"
+                        className="w-full p-3.5 text-white text-xs font-semibold flex items-center justify-between hover:bg-[#111216] transition-all active:bg-[#1A1B22]"
                       >
                         <div className="flex items-center gap-2.5">
-                          <Download className="w-4 h-4 text-[#38BDF8]" />
+                          <Download className="w-4 h-4 text-[#F59E0B]" />
                           <span>Export JSON Backup</span>
                         </div>
-                        <ChevronDown className="w-3.5 h-3.5 -rotate-90 text-[#94A3B8]" />
+                        <ChevronDown className="w-3.5 h-3.5 -rotate-90 text-zinc-400" />
                       </button>
 
-                      <label className="w-full p-3.5 text-[#F8FAFC] text-xs font-semibold flex items-center justify-between hover:bg-[#121722] transition-all active:bg-[#1A2332] cursor-pointer">
+                      <label className="w-full p-3.5 text-white text-xs font-semibold flex items-center justify-between hover:bg-[#111216] transition-all active:bg-[#1A1B22] cursor-pointer">
                         <div className="flex items-center gap-2.5">
-                          <Upload className="w-4 h-4 text-[#38BDF8]" />
+                          <Upload className="w-4 h-4 text-[#F59E0B]" />
                           <span>Import JSON Backup</span>
                         </div>
                         <input 
@@ -1862,90 +1787,89 @@ export default function App() {
                           onChange={handleImportBackup} 
                           className="hidden" 
                         />
-                        <ChevronDown className="w-3.5 h-3.5 -rotate-90 text-[#94A3B8]" />
+                        <ChevronDown className="w-3.5 h-3.5 -rotate-90 text-zinc-400" />
                       </label>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-5">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#2C2C2E]">
-                    <span className="text-xs font-bold text-[#FF6B00]">Authenticated Archive History</span>
+                  <div className="flex items-center justify-between pb-2 border-b border-[#27272A]">
+                    <span className="text-xs font-bold text-[#F59E0B]">Authenticated Archive History</span>
                     <button 
                       onClick={() => setShowHistoryView(false)}
-                      className="text-[#8E8E93] text-xs hover:text-white"
+                      className="text-zinc-400 text-xs hover:text-white"
                     >
                       Back to Settings
                     </button>
                   </div>
 
                   <div>
-                    <h4 className="text-xs font-semibold text-[#8E8E93] uppercase tracking-wider mb-2">
+                    <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                       Archived Notes ({archivedNotes.length})
                     </h4>
                     <div className="flex flex-col gap-2">
                       {archivedNotes.map((note) => (
-                        <div key={note.id} className="bg-black border border-[#2C2C2E] rounded-xl p-3 flex items-center justify-between">
+                        <div key={note.id} className="bg-[#08080A] border border-[#27272A] rounded-xl p-3 flex items-center justify-between">
                           <span className="text-xs font-medium text-white truncate max-w-[150px]">{note.title}</span>
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => handleRestoreNote(note)}
-                              className="text-[10px] text-[#34C759] bg-[#34C759]/10 px-2 py-1 rounded-md font-medium"
+                              className="text-[10px] text-[#10B981] bg-[#10B981]/15 px-2 py-1 rounded-md font-medium"
                             >
                               Restore
                             </button>
                             <button
                               onClick={() => handlePermanentDeleteNote(note.id)}
-                              className="text-[#636366] hover:text-[#FF3B30] p-1"
+                              className="text-zinc-500 hover:text-[#FF3B30] p-1"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
                       ))}
-                      {archivedNotes.length === 0 && <p className="text-xs text-[#636366]">No archived notes.</p>}
+                      {archivedNotes.length === 0 && <p className="text-xs text-zinc-500">No archived notes.</p>}
                     </div>
                   </div>
 
                   <div>
-                    <h4 className="text-xs font-semibold text-[#8E8E93] uppercase tracking-wider mb-2">
+                    <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                       Finished Tasks ({archivedTodos.length})
                     </h4>
                     <div className="flex flex-col gap-2">
                       {archivedTodos.map((todo) => (
-                        <div key={todo.id} className="bg-black border border-[#2C2C2E] rounded-xl p-3 flex items-center justify-between">
-                          <span className="text-xs text-[#8E8E93] line-through truncate max-w-[150px]">{todo.title}</span>
+                        <div key={todo.id} className="bg-[#08080A] border border-[#27272A] rounded-xl p-3 flex items-center justify-between">
+                          <span className="text-xs text-zinc-400 line-through truncate max-w-[150px]">{todo.title}</span>
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => handleRestoreTodo(todo)}
-                              className="text-[10px] text-[#34C759] bg-[#34C759]/10 px-2 py-1 rounded-md font-medium"
+                              className="text-[10px] text-[#10B981] bg-[#10B981]/15 px-2 py-1 rounded-md font-medium"
                             >
                               Restore
                             </button>
                             <button
                               onClick={() => handlePermanentDeleteTodo(todo.id)}
-                              className="text-[#636366] hover:text-[#FF3B30] p-1"
+                              className="text-zinc-500 hover:text-[#FF3B30] p-1"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
                       ))}
-                      {archivedTodos.length === 0 && <p className="text-xs text-[#636366]">No finished task history.</p>}
+                      {archivedTodos.length === 0 && <p className="text-xs text-zinc-500">No finished task history.</p>}
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="pt-4 mt-4 border-t border-[#2C2C2E] flex justify-end">
+              <div className="pt-4 mt-4 border-t border-[#27272A] flex justify-end">
                 <button
                   onClick={() => {
                     setIsSettingsOpen(false);
                     setShowHistoryView(false);
-                    setIsHistoryAuthenticated(false);
                     setBackupStatus('');
                   }}
-                  className="py-2 px-4 rounded-pill border border-[#2C2C2E] text-xs text-[#8E8E93] hover:text-white"
+                  className="py-2 px-4 rounded-pill border border-[#27272A] text-xs text-zinc-400 hover:text-white"
                 >
                   Close
                 </button>
