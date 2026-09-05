@@ -115,14 +115,16 @@ export default function App() {
   const [regEmailInput, setRegEmailInput] = useState('');
   const [regError, setRegError] = useState('');
 
-  // Lock Screen State
+  // Lock Screen & Shape Challenge State
   const [enteredPassword, setEnteredPassword] = useState('');
   const [lockError, setLockError] = useState('');
+  const [isPasswordPassed, setIsPasswordPassed] = useState(false);
+  const [pentagonTapCount, setPentagonTapCount] = useState(0);
+  const [isShapeShaking, setIsShapeShaking] = useState(false);
 
   // Settings State
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [newPasswordInput, setNewPasswordInput] = useState('');
-  const [newEmailInput, setNewEmailInput] = useState('');
   const [passwordChangeStatus, setPasswordChangeStatus] = useState('');
   const [isPasswordSavedFeedback, setIsPasswordSavedFeedback] = useState(false);
 
@@ -172,8 +174,6 @@ export default function App() {
   const [showHistoryView, setShowHistoryView] = useState(false);
   const [backupStatus, setBackupStatus] = useState<string>('');
 
-
-
   // ────────────────── REGISTRATION PROCESS (PASSWORD-ONLY) ──────────────────
   const handleCreateVaultPassword = () => {
     setRegError('');
@@ -189,29 +189,44 @@ export default function App() {
     // Save registration credentials
     localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, regPassword.trim());
     localStorage.setItem(IS_REGISTERED_STORAGE_KEY, 'true');
-    if (regEmailInput.trim()) {
-      localStorage.setItem(REGISTERED_EMAIL_STORAGE_KEY, regEmailInput.trim());
-      setRegisteredEmail(regEmailInput.trim());
-    }
 
     setMasterPassword(regPassword.trim());
     setIsRegistered(true);
 
-    // Unlock vault directly
-    setIsUnlocked(true);
+    // Move to Shape Security Challenge
+    setIsPasswordPassed(true);
     setLockError('');
-    setActiveToastAlert('Vault created successfully! Welcome to SecureVault.');
+    setPentagonTapCount(0);
   };
 
   // ────────────────── LOGIN HANDLER (PASSWORD-ONLY) ──────────────────
   const handleLoginPasswordStepSubmit = () => {
     setLockError('');
     if (enteredPassword.trim() === masterPassword.trim()) {
-      setIsUnlocked(true);
+      setIsPasswordPassed(true);
       setEnteredPassword('');
       setLockError('');
+      setPentagonTapCount(0);
     } else {
       setLockError('Incorrect Vault Password. Please try again.');
+    }
+  };
+
+  // ────────────────── SHAPE CHALLENGE HANDLER ──────────────────
+  const handleShapeClick = (shapeId: string) => {
+    if (shapeId === 'orange_pentagon') {
+      const nextCount = pentagonTapCount + 1;
+      setPentagonTapCount(nextCount);
+      if (nextCount >= 5) {
+        setIsUnlocked(true);
+        setIsPasswordPassed(false);
+        setPentagonTapCount(0);
+        setActiveToastAlert('Access Granted! Welcome to SecureVault.');
+      }
+    } else {
+      setPentagonTapCount(0);
+      setIsShapeShaking(true);
+      setTimeout(() => setIsShapeShaking(false), 400);
     }
   };
 
@@ -248,24 +263,17 @@ export default function App() {
   }, []);
 
   const handleChangeMasterPassword = () => {
-    if (!newPasswordInput.trim() && !newEmailInput.trim()) {
-      setPasswordChangeStatus('Please enter new details to update.');
+    if (!newPasswordInput.trim()) {
+      setPasswordChangeStatus('Please enter a new Vault Password.');
       return;
     }
-    if (newPasswordInput.trim()) {
-      localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, newPasswordInput.trim());
-      setMasterPassword(newPasswordInput.trim());
-    }
-    if (newEmailInput.trim() && newEmailInput.includes('@')) {
-      localStorage.setItem(REGISTERED_EMAIL_STORAGE_KEY, newEmailInput.trim());
-      setRegisteredEmail(newEmailInput.trim());
-    }
+    localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, newPasswordInput.trim());
+    setMasterPassword(newPasswordInput.trim());
 
     setNewPasswordInput('');
-    setNewEmailInput('');
     setIsEditingPassword(false);
     setIsPasswordSavedFeedback(true);
-    setPasswordChangeStatus('Account credentials updated successfully ✓');
+    setPasswordChangeStatus('Vault Password updated successfully ✓');
 
     setTimeout(() => {
       setIsPasswordSavedFeedback(false);
@@ -929,6 +937,97 @@ export default function App() {
     );
   }
 
+  // ────────────────── SHAPE CHALLENGE SCREEN (PATTERN GATE) ──────────────────
+  if (!isUnlocked && isPasswordPassed) {
+    const shapesList = [
+      { id: 'blue_circle', name: 'Blue Circle', color: '#007AFF', shape: 'circle' },
+      { id: 'green_square', name: 'Green Square', color: '#34C759', shape: 'square' },
+      { id: 'red_triangle', name: 'Red Triangle', color: '#FF3B30', shape: 'triangle' },
+      { id: 'yellow_diamond', name: 'Yellow Diamond', color: '#FFCC00', shape: 'diamond' },
+      { id: 'purple_hexagon', name: 'Purple Hexagon', color: '#AF52DE', shape: 'hexagon' },
+      { id: 'gold_star', name: 'Gold Star', color: '#FFD60A', shape: 'star' },
+      { id: 'orange_pentagon', name: 'Orange Pentagon', color: '#FF6B00', shape: 'pentagon' },
+      { id: 'teal_octagon', name: 'Teal Octagon', color: '#5AC8FA', shape: 'octagon' },
+      { id: 'pink_heart', name: 'Pink Heart', color: '#FF2D55', shape: 'heart' }
+    ];
+
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+        {/* DISMISSABLE TOAST NOTIFICATION BANNER */}
+        <AnimatePresence>
+          {activeToastAlert && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-auto"
+            >
+              <div className="bg-[#FF6B00] text-white p-3.5 rounded-card shadow-2xl flex items-center justify-between border border-white/20">
+                <div className="flex items-center gap-3 flex-1 pr-2">
+                  <BellRing className="w-5 h-5 shrink-0" />
+                  <p className="text-xs font-semibold leading-tight">{activeToastAlert}</p>
+                </div>
+                <button
+                  onClick={() => setActiveToastAlert('')}
+                  className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0"
+                  title="Dismiss notification"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className={`w-full max-w-sm bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-6 flex flex-col items-center text-center shadow-2xl relative z-10 transition-transform ${
+          isShapeShaking ? 'scale-95 border-[#FF3B30]' : ''
+        }`}>
+          <div className="w-12 h-12 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-3 border border-[#FF6B00]/30">
+            <KeyRound className="w-6 h-6 stroke-[2]" />
+          </div>
+
+          <h1 className="text-lg font-bold mb-1 tracking-tight text-white">Security Verification</h1>
+          <p className="text-xs text-[#8E8E93] leading-relaxed mb-5">
+            Password Verified ✓ Tap the secret shape sequence to unlock.
+          </p>
+
+          <div className="grid grid-cols-3 gap-3.5 w-full mb-6">
+            {shapesList.map((item) => (
+              <motion.button
+                key={item.id}
+                whileTap={{ scale: 0.88 }}
+                onClick={() => handleShapeClick(item.id)}
+                className="w-full aspect-square bg-black border border-[#2C2C2E] hover:border-[#FF6B00] rounded-2xl flex items-center justify-center p-3.5 transition-all shadow-md group"
+              >
+                <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+                  {item.shape === 'circle' && <circle cx="50" cy="50" r="40" fill={item.color} />}
+                  {item.shape === 'square' && <rect x="12" y="12" width="76" height="76" rx="12" fill={item.color} />}
+                  {item.shape === 'triangle' && <polygon points="50,10 90,85 10,85" fill={item.color} />}
+                  {item.shape === 'diamond' && <polygon points="50,10 90,50 50,90 10,50" fill={item.color} />}
+                  {item.shape === 'hexagon' && <polygon points="50,6 90,26 90,74 50,94 10,74 10,26" fill={item.color} />}
+                  {item.shape === 'star' && <polygon points="50,5 63,35 95,38 71,60 78,92 50,75 22,92 29,60 5,38 37,35" fill={item.color} />}
+                  {item.shape === 'pentagon' && <polygon points="50,6 94,38 77,90 23,90 6,38" fill={item.color} />}
+                  {item.shape === 'octagon' && <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill={item.color} />}
+                  {item.shape === 'heart' && <path d="M50 88 C20 60 5 40 15 20 C25 5 45 15 50 25 C55 15 75 5 85 20 C95 40 80 60 50 88 Z" fill={item.color} />}
+                </svg>
+              </motion.button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => {
+              setIsPasswordPassed(false);
+              setPentagonTapCount(0);
+            }}
+            className="text-xs text-[#8E8E93] hover:text-white transition-colors"
+          >
+            ← Re-enter Vault Password
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // DEDICATED NOTE DETAIL VIEW SCREEN
   if (selectedNoteForView) {
     return (
@@ -1479,7 +1578,7 @@ export default function App() {
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-white flex items-center gap-1.5">
                         <KeyRound className="w-4 h-4 text-[#FF6B00]" />
-                        Vault Password & Gmail
+                        Vault Password Security
                       </label>
                       <button
                         onClick={() => setIsEditingPassword(!isEditingPassword)}
@@ -1494,10 +1593,6 @@ export default function App() {
                       </button>
                     </div>
 
-                    <p className="text-[11px] text-[#8E8E93]">
-                      Registered Email: <span className="text-white font-medium">{registeredEmail || 'Not set'}</span>
-                    </p>
-
                     {passwordChangeStatus && (
                       <span className="text-[11px] text-[#34C759] font-medium">
                         {passwordChangeStatus}
@@ -1506,14 +1601,6 @@ export default function App() {
 
                     {isEditingPassword && (
                       <div className="flex flex-col gap-2">
-                        <input
-                          type="email"
-                          placeholder="Update Email / Gmail"
-                          value={newEmailInput}
-                          onChange={(e) => setNewEmailInput(e.target.value)}
-                          className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
-                        />
-
                         <input
                           type="password"
                           placeholder="New Vault Password"
