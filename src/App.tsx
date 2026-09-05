@@ -32,7 +32,9 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  RotateCcw
+  RotateCcw,
+  MailCheck,
+  Key
 } from 'lucide-react';
 import { 
   getAllEncryptedNotes, 
@@ -93,7 +95,7 @@ export default function App() {
   const [activeNavTab, setActiveNavTab] = useState<'notes' | 'todos'>('notes');
   const [showPasswordText, setShowPasswordText] = useState(false);
 
-  // Registration State (Gmail + Master Password + Email OTP)
+  // Registration State (1: Enter Email ➔ 2: Verify Gmail OTP ➔ 3: Create Vault Password)
   const [isRegistered, setIsRegistered] = useState<boolean>(
     () => Boolean(localStorage.getItem(IS_REGISTERED_STORAGE_KEY))
   );
@@ -103,12 +105,12 @@ export default function App() {
   const [regEmailInput, setRegEmailInput] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
-  const [regStep, setRegStep] = useState<1 | 2>(1); // 1: Info entry, 2: OTP verification
+  const [regStep, setRegStep] = useState<1 | 2 | 3>(1); 
   const [registrationOtp, setRegistrationOtp] = useState('');
   const [enteredRegOtp, setEnteredRegOtp] = useState('');
   const [regError, setRegError] = useState('');
 
-  // Lock Screen 2FA State (Step 1: Password, Step 2: Email OTP)
+  // Login / Lock Screen 2FA State (1: Send & Verify Email OTP ➔ 2: Enter Vault Password)
   const [authStep, setAuthStep] = useState<1 | 2>(1);
   const [enteredPassword, setEnteredPassword] = useState('');
   const [loginOtp, setLoginOtp] = useState('');
@@ -173,29 +175,6 @@ export default function App() {
   const [showHistoryView, setShowHistoryView] = useState(false);
   const [backupStatus, setBackupStatus] = useState<string>('');
 
-  // ────────────────── RESET ACCOUNT TO FRESH REGISTRATION ──────────────────
-  const handleResetAccount = () => {
-    localStorage.removeItem(IS_REGISTERED_STORAGE_KEY);
-    localStorage.removeItem(MASTER_PASSWORD_STORAGE_KEY);
-    localStorage.removeItem(REGISTERED_EMAIL_STORAGE_KEY);
-    setIsRegistered(false);
-    setIsUnlocked(false);
-    setRegisteredEmail('');
-    setMasterPassword('');
-    setAuthStep(1);
-    setRegStep(1);
-    setRegEmailInput('');
-    setRegPassword('');
-    setRegConfirmPassword('');
-    setEnteredPassword('');
-    setEnteredLoginOtp('');
-    setEnteredRegOtp('');
-    setLockError('');
-    setRegError('');
-    setActiveToastAlert('Vault reset to new user perspective. Please create a new account.');
-    setTimeout(() => setActiveToastAlert(''), 4000);
-  };
-
   // ────────────────── ZERO-COST 2FA EMAIL OTP DISPATCHER ──────────────────
   const generate6DigitOtp = (): string => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -218,13 +197,13 @@ export default function App() {
       }
     }
 
-    // Zero-cost Toast alert + Browser Notification display
-    const alertMsg = `📩 2FA Email OTP Sent to ${targetEmail} | Verification Code: [ ${otpCode} ]`;
+    // Zero-cost Dismissable Toast alert + Browser Notification display
+    const alertMsg = `📩 2FA Email OTP Sent to ${targetEmail} | Code: [ ${otpCode} ]`;
     setActiveToastAlert(alertMsg);
 
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
-        new Notification('SecureVault 2FA Verification Code', {
+        new Notification('SecureVault Verification Code', {
           body: `Your 6-Digit OTP Code is: ${otpCode}`,
           icon: '/vite.svg'
         });
@@ -244,19 +223,12 @@ export default function App() {
     }
   }, [otpResendCooldown]);
 
-  // ────────────────── REGISTRATION HANDLERS ──────────────────
-  const handleStartRegistrationOtp = async () => {
+  // ────────────────── REGISTRATION PROCESS ──────────────────
+  // Step 1: Send Gmail Verification OTP
+  const handleStartRegistrationEmailOtp = async () => {
     setRegError('');
     if (!regEmailInput.trim() || !regEmailInput.includes('@')) {
       setRegError('Please enter a valid Email / Gmail address.');
-      return;
-    }
-    if (!regPassword.trim() || regPassword.length < 4) {
-      setRegError('Master Password must be at least 4 characters.');
-      return;
-    }
-    if (regPassword !== regConfirmPassword) {
-      setRegError('Passwords do not match.');
       return;
     }
 
@@ -266,53 +238,83 @@ export default function App() {
     setRegStep(2);
   };
 
+  // Step 2: Verify Gmail OTP
   const handleVerifyRegistrationOtp = () => {
     setRegError('');
     if (enteredRegOtp.trim() === registrationOtp.trim()) {
-      localStorage.setItem(REGISTERED_EMAIL_STORAGE_KEY, regEmailInput.trim());
-      localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, regPassword.trim());
-      localStorage.setItem(IS_REGISTERED_STORAGE_KEY, 'true');
-      setRegisteredEmail(regEmailInput.trim());
-      setMasterPassword(regPassword.trim());
-      setIsRegistered(true);
-      setIsUnlocked(true);
+      setRegStep(3); // Email verified ➔ proceed to password creation
     } else {
-      setRegError('Invalid 6-digit OTP code. Please check your email notification and try again.');
+      setRegError('Invalid 6-digit OTP code. Please check your notification and try again.');
     }
   };
 
-  // ────────────────── LOGIN 2FA VERIFICATION HANDLERS ──────────────────
-  const handlePasswordStepSubmit = async () => {
+  // Step 3: Create Vault Password & Finish Registration
+  const handleCreateVaultPassword = () => {
+    setRegError('');
+    if (!regPassword.trim() || regPassword.length < 4) {
+      setRegError('Vault Password must be at least 4 characters.');
+      return;
+    }
+    if (regPassword !== regConfirmPassword) {
+      setRegError('Passwords do not match.');
+      return;
+    }
+
+    // Save registration credentials
+    localStorage.setItem(REGISTERED_EMAIL_STORAGE_KEY, regEmailInput.trim());
+    localStorage.setItem(MASTER_PASSWORD_STORAGE_KEY, regPassword.trim());
+    localStorage.setItem(IS_REGISTERED_STORAGE_KEY, 'true');
+
+    setRegisteredEmail(regEmailInput.trim());
+    setMasterPassword(regPassword.trim());
+    setIsRegistered(true);
+
+    // Redirect to verification / login screen
+    setIsUnlocked(false);
+    setAuthStep(1);
+    setLockError('');
+    setActiveToastAlert('Account created successfully! Please verify your email OTP to log in.');
+  };
+
+  // ────────────────── LOGIN / VERIFICATION HANDLERS ──────────────────
+  // Dispatch Login OTP on initial login screen render
+  const handleSendLoginOtp = async () => {
+    if (isSendingOtp) return;
+    const otp = generate6DigitOtp();
+    setLoginOtp(otp);
+    await dispatchOtpCode(registeredEmail || 'user@gmail.com', otp);
+    setOtpResendCooldown(30);
+  };
+
+  // Step 1: Verify Login Email OTP
+  const handleLoginOtpStepSubmit = () => {
+    setLockError('');
+    if (loginOtp && enteredLoginOtp.trim() === loginOtp.trim()) {
+      setAuthStep(2); // OTP Verified ➔ Move to Vault Password step
+      setEnteredLoginOtp('');
+    } else if (!loginOtp) {
+      setLockError('Please click "Send 6-Digit OTP" first.');
+    } else {
+      setLockError('Invalid 6-digit OTP code. Please check your notification and try again.');
+    }
+  };
+
+  // Step 2: Verify Vault Password & Unlock Session
+  const handleLoginPasswordStepSubmit = () => {
     setLockError('');
     if (enteredPassword.trim() === masterPassword.trim()) {
-      const otp = generate6DigitOtp();
-      setLoginOtp(otp);
-      await dispatchOtpCode(registeredEmail || 'user@gmail.com', otp);
-      setAuthStep(2);
-      setOtpResendCooldown(30);
-    } else {
-      setLockError('Incorrect Vault Master Password. If you are registering a new user, click "New User? Register / Reset Vault Credentials" below.');
-    }
-  };
-
-  const handleOtpStepSubmit = () => {
-    setLockError('');
-    if (enteredLoginOtp.trim() === loginOtp.trim()) {
       setIsUnlocked(true);
       setEnteredPassword('');
       setEnteredLoginOtp('');
       setAuthStep(1);
     } else {
-      setLockError('Invalid 6-digit OTP code. Please check your email and try again.');
+      setLockError('Incorrect Vault Password. Please try again.');
     }
   };
 
   const handleResendLoginOtp = async () => {
     if (otpResendCooldown > 0) return;
-    const otp = generate6DigitOtp();
-    setLoginOtp(otp);
-    await dispatchOtpCode(registeredEmail || 'user@gmail.com', otp);
-    setOtpResendCooldown(30);
+    await handleSendLoginOtp();
   };
 
   useEffect(() => {
@@ -372,6 +374,26 @@ export default function App() {
       setIsPasswordSavedFeedback(false);
       setPasswordChangeStatus('');
     }, 3000);
+  };
+
+  const handleResetAccount = () => {
+    localStorage.removeItem(IS_REGISTERED_STORAGE_KEY);
+    localStorage.removeItem(MASTER_PASSWORD_STORAGE_KEY);
+    localStorage.removeItem(REGISTERED_EMAIL_STORAGE_KEY);
+    setIsRegistered(false);
+    setIsUnlocked(false);
+    setRegisteredEmail('');
+    setMasterPassword('');
+    setAuthStep(1);
+    setRegStep(1);
+    setRegEmailInput('');
+    setRegPassword('');
+    setRegConfirmPassword('');
+    setEnteredPassword('');
+    setEnteredLoginOtp('');
+    setEnteredRegOtp('');
+    setLockError('');
+    setRegError('');
   };
 
   const handleRequestNotificationPermission = async () => {
@@ -836,21 +858,31 @@ export default function App() {
     return matchesTag && matchesSearch;
   });
 
-  // ────────────────── REGISTRATION SCREEN ──────────────────
+  // ────────────────── REGISTRATION PROCESS (NEW USER / NEW DOWNLOAD) ──────────────────
   if (!isRegistered) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+        {/* DISMISSABLE TOAST NOTIFICATION BANNER */}
         <AnimatePresence>
           {activeToastAlert && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-none"
+              className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-auto"
             >
-              <div className="bg-[#FF6B00] text-white p-3.5 rounded-card shadow-2xl flex items-center gap-3 border border-white/20">
-                <BellRing className="w-5 h-5 shrink-0" />
-                <p className="text-xs font-semibold leading-tight">{activeToastAlert}</p>
+              <div className="bg-[#FF6B00] text-white p-3.5 rounded-card shadow-2xl flex items-center justify-between border border-white/20">
+                <div className="flex items-center gap-3 flex-1 pr-2">
+                  <BellRing className="w-5 h-5 shrink-0" />
+                  <p className="text-xs font-semibold leading-tight">{activeToastAlert}</p>
+                </div>
+                <button
+                  onClick={() => setActiveToastAlert('')}
+                  className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0"
+                  title="Dismiss notification"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             </motion.div>
           )}
@@ -861,25 +893,34 @@ export default function App() {
             <ShieldCheck className="w-8 h-8 stroke-[2]" />
           </div>
 
-          <h1 className="text-xl font-bold mb-1 tracking-tight text-white">Create Secure Vault</h1>
+          <h1 className="text-xl font-bold mb-1 tracking-tight text-white">Create Account</h1>
           <p className="text-xs text-[#8E8E93] mb-6">
-            Set up 2FA Email OTP Verification & Master Password
+            Register Gmail ➔ Verify OTP ➔ Create Vault Password
           </p>
 
-          <div className="flex items-center gap-2 mb-6 w-full justify-center">
+          <div className="flex items-center gap-1.5 mb-6 w-full justify-center">
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
               regStep === 1 ? 'bg-[#FF6B00] text-white' : 'bg-[#34C759] text-white'
             }`}>
               {regStep === 1 ? '1' : '✓'}
             </div>
-            <span className="text-[11px] font-semibold text-[#8E8E93]">Credentials</span>
-            <div className="w-6 h-0.5 bg-[#2C2C2E]" />
+            <span className="text-[10px] font-semibold text-[#8E8E93]">Gmail</span>
+            <div className="w-4 h-0.5 bg-[#2C2C2E]" />
+            
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-              regStep === 2 ? 'bg-[#FF6B00] text-white' : 'bg-[#2C2C2E] text-[#8E8E93]'
+              regStep === 2 ? 'bg-[#FF6B00] text-white' : regStep > 2 ? 'bg-[#34C759] text-white' : 'bg-[#2C2C2E] text-[#8E8E93]'
             }`}>
-              2
+              {regStep > 2 ? '✓' : '2'}
             </div>
-            <span className="text-[11px] font-semibold text-[#8E8E93]">Verify OTP</span>
+            <span className="text-[10px] font-semibold text-[#8E8E93]">Verify</span>
+            <div className="w-4 h-0.5 bg-[#2C2C2E]" />
+
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+              regStep === 3 ? 'bg-[#FF6B00] text-white' : 'bg-[#2C2C2E] text-[#8E8E93]'
+            }`}>
+              3
+            </div>
+            <span className="text-[10px] font-semibold text-[#8E8E93]">Password</span>
           </div>
 
           {regError && (
@@ -888,20 +929,86 @@ export default function App() {
             </div>
           )}
 
-          {regStep === 1 ? (
+          {/* STEP 1: ENTER GMAIL */}
+          {regStep === 1 && (
             <div className="w-full flex flex-col gap-3">
+              <h2 className="text-sm font-bold text-white text-left">Step 1 of 3: Enter Gmail</h2>
+              <p className="text-xs text-[#8E8E93] text-left mb-1">
+                Enter your Gmail address to receive a 6-digit verification code.
+              </p>
+
               <input
                 type="email"
                 placeholder="Enter Email / Gmail address"
                 value={regEmailInput}
                 onChange={(e) => setRegEmailInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleStartRegistrationEmailOtp()}
                 className="w-full bg-black border border-[#2C2C2E] rounded-xl px-4 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
               />
+
+              <button
+                onClick={handleStartRegistrationEmailOtp}
+                disabled={isSendingOtp}
+                className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm mt-2 disabled:opacity-50"
+              >
+                <span>{isSendingOtp ? 'Sending OTP Code...' : 'Send Verification OTP'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* STEP 2: VERIFY GMAIL OTP */}
+          {regStep === 2 && (
+            <div className="w-full flex flex-col gap-3">
+              <h2 className="text-sm font-bold text-white text-left">Step 2 of 3: Verify Gmail OTP</h2>
+              <p className="text-xs text-[#8E8E93] text-left mb-1">
+                A 6-digit OTP was dispatched to <span className="text-white font-semibold">{regEmailInput}</span>. Check notification banner above.
+              </p>
+
+              <input
+                type="text"
+                maxLength={6}
+                placeholder="Enter 6-digit OTP"
+                value={enteredRegOtp}
+                onChange={(e) => setEnteredRegOtp(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleVerifyRegistrationOtp()}
+                className="w-full bg-black border border-[#2C2C2E] rounded-xl px-4 py-3 text-center text-lg font-bold tracking-widest text-[#FF6B00] placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
+              />
+
+              <button
+                onClick={handleVerifyRegistrationOtp}
+                className="w-full bg-[#34C759] hover:bg-[#2DA84A] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm mt-2"
+              >
+                <MailCheck className="w-4 h-4" />
+                Verify Gmail OTP
+              </button>
+
+              <button
+                onClick={() => setRegStep(1)}
+                className="text-xs text-[#8E8E93] hover:text-white mt-1"
+              >
+                ← Edit Gmail Address
+              </button>
+            </div>
+          )}
+
+          {/* STEP 3: CREATE VAULT PASSWORD */}
+          {regStep === 3 && (
+            <div className="w-full flex flex-col gap-3">
+              <div className="bg-[#34C759]/15 border border-[#34C759]/30 rounded-xl p-2.5 mb-1 text-xs text-[#34C759] text-left flex items-center gap-2">
+                <Check className="w-4 h-4 shrink-0 stroke-[3]" />
+                <span>Gmail Verified ({regEmailInput}) ✓</span>
+              </div>
+
+              <h2 className="text-sm font-bold text-white text-left">Step 3 of 3: Create Vault Password</h2>
+              <p className="text-xs text-[#8E8E93] text-left mb-1">
+                Set a secret password to encrypt & protect your vault notes.
+              </p>
 
               <div className="relative w-full">
                 <input
                   type={showPasswordText ? 'text' : 'password'}
-                  placeholder="Set Master Password"
+                  placeholder="Set Vault Password"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
@@ -918,9 +1025,10 @@ export default function App() {
               <div className="relative w-full">
                 <input
                   type={showPasswordText ? 'text' : 'password'}
-                  placeholder="Confirm Master Password"
+                  placeholder="Confirm Vault Password"
                   value={regConfirmPassword}
                   onChange={(e) => setRegConfirmPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCreateVaultPassword()}
                   className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
                 />
                 <button
@@ -933,42 +1041,11 @@ export default function App() {
               </div>
 
               <button
-                onClick={handleStartRegistrationOtp}
-                disabled={isSendingOtp}
-                className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm mt-2 disabled:opacity-50"
+                onClick={handleCreateVaultPassword}
+                className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm mt-2"
               >
-                <span>{isSendingOtp ? 'Sending OTP Code...' : 'Send 2FA OTP Code'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="w-full flex flex-col gap-3">
-              <p className="text-xs text-[#8E8E93] text-left">
-                A 6-digit OTP code was generated & dispatched to <span className="text-white font-semibold">{regEmailInput}</span>. Check toast alert.
-              </p>
-
-              <input
-                type="text"
-                maxLength={6}
-                placeholder="Enter 6-digit OTP"
-                value={enteredRegOtp}
-                onChange={(e) => setEnteredRegOtp(e.target.value)}
-                className="w-full bg-black border border-[#2C2C2E] rounded-xl px-4 py-3 text-center text-lg font-bold tracking-widest text-[#FF6B00] placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
-              />
-
-              <button
-                onClick={handleVerifyRegistrationOtp}
-                className="w-full bg-[#34C759] hover:bg-[#2DA84A] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm mt-2"
-              >
-                <ShieldCheck className="w-4 h-4" />
-                Verify OTP & Complete Setup
-              </button>
-
-              <button
-                onClick={() => setRegStep(1)}
-                className="text-xs text-[#8E8E93] hover:text-white mt-2"
-              >
-                ← Back to Edit Details
+                <Key className="w-4 h-4" />
+                Save Password & Finish Setup
               </button>
             </div>
           )}
@@ -977,21 +1054,31 @@ export default function App() {
     );
   }
 
-  // ────────────────── 2-FACTOR ENTRY LOCK SCREEN ──────────────────
+  // ────────────────── LOGIN / VERIFICATION LOCK SCREEN (RETURNING USER) ──────────────────
   if (!isUnlocked) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+        {/* DISMISSABLE TOAST NOTIFICATION BANNER */}
         <AnimatePresence>
           {activeToastAlert && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-none"
+              className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-auto"
             >
-              <div className="bg-[#FF6B00] text-white p-3.5 rounded-card shadow-2xl flex items-center gap-3 border border-white/20">
-                <BellRing className="w-5 h-5 shrink-0" />
-                <p className="text-xs font-semibold leading-tight">{activeToastAlert}</p>
+              <div className="bg-[#FF6B00] text-white p-3.5 rounded-card shadow-2xl flex items-center justify-between border border-white/20">
+                <div className="flex items-center gap-3 flex-1 pr-2">
+                  <BellRing className="w-5 h-5 shrink-0" />
+                  <p className="text-xs font-semibold leading-tight">{activeToastAlert}</p>
+                </div>
+                <button
+                  onClick={() => setActiveToastAlert('')}
+                  className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0"
+                  title="Dismiss notification"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             </motion.div>
           )}
@@ -1005,14 +1092,14 @@ export default function App() {
             }`}>
               {authStep === 1 ? '1' : '✓'}
             </div>
-            <span className="text-[11px] font-semibold text-[#8E8E93]">Password</span>
+            <span className="text-[11px] font-semibold text-[#8E8E93]">Email OTP</span>
             <div className="w-6 h-0.5 bg-[#2C2C2E]" />
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
               authStep === 2 ? 'bg-[#FF6B00] text-white' : 'bg-[#2C2C2E] text-[#8E8E93]'
             }`}>
               2
             </div>
-            <span className="text-[11px] font-semibold text-[#8E8E93]">Email OTP</span>
+            <span className="text-[11px] font-semibold text-[#8E8E93]">Vault Password</span>
           </div>
 
           {lockError && (
@@ -1021,25 +1108,68 @@ export default function App() {
             </div>
           )}
 
-          {/* STEP 1: MASTER PASSWORD */}
+          {/* STEP 1: VERIFY LOGIN EMAIL OTP */}
           {authStep === 1 && (
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full flex flex-col items-center">
               <div className="w-14 h-14 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-4 border border-[#FF6B00]/30">
+                <BellRing className="w-7 h-7 stroke-[2]" />
+              </div>
+
+              <h1 className="text-lg font-bold mb-1 tracking-tight text-white">Step 1 of 2: Email OTP</h1>
+              <p className="text-xs text-[#8E8E93] leading-relaxed mb-4">
+                Verify identity via OTP sent to <span className="text-white font-semibold">{registeredEmail || 'your email'}</span>.
+              </p>
+
+              <div className="flex items-center gap-2 w-full mb-4">
+                <input
+                  type="text"
+                  maxLength={6}
+                  placeholder="Enter 6-Digit OTP"
+                  value={enteredLoginOtp}
+                  onChange={(e) => setEnteredLoginOtp(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLoginOtpStepSubmit()}
+                  className="flex-1 bg-black border border-[#2C2C2E] rounded-xl px-3 py-3 text-center text-base font-bold tracking-widest text-[#FF6B00] placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
+                />
+
+                <button
+                  onClick={handleSendLoginOtp}
+                  disabled={isSendingOtp || otpResendCooldown > 0}
+                  className="bg-[#2C2C2E] hover:bg-[#3A3A3C] text-xs text-white px-3 py-3 rounded-xl border border-[#3A3A3C] shrink-0 disabled:opacity-50"
+                  title="Send or Resend OTP"
+                >
+                  {otpResendCooldown > 0 ? `${otpResendCooldown}s` : 'Send OTP'}
+                </button>
+              </div>
+
+              <button
+                onClick={handleLoginOtpStepSubmit}
+                className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm"
+              >
+                <span>Verify OTP Code</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
+
+          {/* STEP 2: ENTER VAULT PASSWORD */}
+          {authStep === 2 && (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full flex flex-col items-center">
+              <div className="w-14 h-14 rounded-full bg-[#34C759]/15 flex items-center justify-center text-[#34C759] mb-4 border border-[#34C759]/30">
                 <Lock className="w-7 h-7 stroke-[2]" />
               </div>
 
-              <h1 className="text-lg font-bold mb-1 tracking-tight text-white">Step 1 of 2: Master Password</h1>
-              <p className="text-xs text-[#8E8E93] mb-5">
-                Enter your Master Password to initiate 2FA Email OTP dispatch.
+              <h1 className="text-lg font-bold mb-1 tracking-tight text-white">Step 2 of 2: Vault Password</h1>
+              <p className="text-xs text-[#8E8E93] leading-relaxed mb-5">
+                Email OTP Verified ✓ Enter your secret Vault Password to unlock.
               </p>
 
               <div className="relative w-full mb-4">
                 <input
                   type={showPasswordText ? 'text' : 'password'}
-                  placeholder="Enter Master Password"
+                  placeholder="Enter Vault Password"
                   value={enteredPassword}
                   onChange={(e) => setEnteredPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handlePasswordStepSubmit()}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLoginPasswordStepSubmit()}
                   className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
                 />
                 <button
@@ -1052,70 +1182,19 @@ export default function App() {
               </div>
 
               <button
-                onClick={handlePasswordStepSubmit}
-                disabled={isSendingOtp}
-                className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm disabled:opacity-50"
-              >
-                <span>{isSendingOtp ? 'Sending OTP Code...' : 'Next: Send 2FA Email OTP'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={handleResetAccount}
-                className="mt-5 text-xs text-[#8E8E93] hover:text-[#FF6B00] flex items-center gap-1.5 transition-colors underline underline-offset-4"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                New User? Register / Reset Vault Credentials
-              </button>
-            </motion.div>
-          )}
-
-          {/* STEP 2: 2FA EMAIL OTP VERIFICATION */}
-          {authStep === 2 && (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full bg-[#34C759]/15 flex items-center justify-center text-[#34C759] mb-4 border border-[#34C759]/30">
-                <BellRing className="w-7 h-7 stroke-[2]" />
-              </div>
-
-              <h1 className="text-lg font-bold mb-1 tracking-tight text-white">Step 2 of 2: Email OTP Code</h1>
-              <p className="text-xs text-[#8E8E93] leading-relaxed mb-5">
-                A 6-digit OTP code was sent to <span className="text-white font-semibold">{registeredEmail || 'user@gmail.com'}</span>. Check toast alert/notification.
-              </p>
-
-              <input
-                type="text"
-                maxLength={6}
-                placeholder="Enter 6-Digit OTP"
-                value={enteredLoginOtp}
-                onChange={(e) => setEnteredLoginOtp(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleOtpStepSubmit()}
-                className="w-full bg-black border border-[#2C2C2E] rounded-xl px-4 py-3 text-center text-lg font-bold tracking-widest text-[#FF6B00] placeholder-[#636366] mb-4 focus:outline-none focus:border-[#FF6B00]"
-              />
-
-              <button
-                onClick={handleOtpStepSubmit}
+                onClick={handleLoginPasswordStepSubmit}
                 className="w-full bg-[#34C759] hover:bg-[#2DA84A] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm"
               >
                 <Unlock className="w-4 h-4" />
-                Verify OTP & Grant Session
+                Unlock & Enter Vault
               </button>
 
-              <div className="flex items-center justify-between w-full mt-4 text-xs">
-                <button
-                  onClick={() => setAuthStep(1)}
-                  className="text-[#8E8E93] hover:text-white"
-                >
-                  ← Back to Password
-                </button>
-
-                <button
-                  onClick={handleResendLoginOtp}
-                  disabled={otpResendCooldown > 0}
-                  className="text-[#FF6B00] hover:underline disabled:opacity-50"
-                >
-                  {otpResendCooldown > 0 ? `Resend in ${otpResendCooldown}s` : 'Resend OTP'}
-                </button>
-              </div>
+              <button
+                onClick={() => setAuthStep(1)}
+                className="text-xs text-[#8E8E93] hover:text-white mt-4"
+              >
+                ← Back to OTP Step
+              </button>
             </motion.div>
           )}
 
@@ -1189,17 +1268,27 @@ export default function App() {
   // MAIN DASHBOARD
   return (
     <div className="min-h-screen bg-black text-white p-4 max-w-md mx-auto pb-32 font-sans relative">
+      {/* DISMISSABLE TOAST NOTIFICATION BANNER */}
       <AnimatePresence>
         {activeToastAlert && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-none"
+            className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50 pointer-events-auto"
           >
-            <div className="bg-[#FF6B00] text-white p-3.5 rounded-card shadow-2xl flex items-center gap-3 border border-white/20">
-              <BellRing className="w-5 h-5 shrink-0" />
-              <p className="text-xs font-semibold leading-tight">{activeToastAlert}</p>
+            <div className="bg-[#FF6B00] text-white p-3.5 rounded-card shadow-2xl flex items-center justify-between border border-white/20">
+              <div className="flex items-center gap-3 flex-1 pr-2">
+                <BellRing className="w-5 h-5 shrink-0" />
+                <p className="text-xs font-semibold leading-tight">{activeToastAlert}</p>
+              </div>
+              <button
+                onClick={() => setActiveToastAlert('')}
+                className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0"
+                title="Dismiss notification"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </motion.div>
         )}
@@ -1224,7 +1313,7 @@ export default function App() {
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="w-9 h-9 rounded-full bg-[#1C1C1E] border border-[#2C2C2E] flex items-center justify-center text-[#8E8E93] hover:text-white"
-            title="Settings & Backup"
+            title="Settings & Security"
           >
             <Settings className="w-4 h-4" />
           </button>
@@ -1665,7 +1754,7 @@ export default function App() {
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-white flex items-center gap-1.5">
                         <KeyRound className="w-4 h-4 text-[#FF6B00]" />
-                        Vault Master Password & Gmail
+                        Vault Password & Gmail
                       </label>
                       <button
                         onClick={() => setIsEditingPassword(!isEditingPassword)}
@@ -1674,7 +1763,7 @@ export default function App() {
                             ? 'bg-[#FF6B00] text-white' 
                             : 'bg-[#1C1C1E] border border-[#2C2C2E] text-[#8E8E93] hover:text-white'
                         }`}
-                        title="Edit Master Password"
+                        title="Edit Account Details"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
@@ -1702,7 +1791,7 @@ export default function App() {
 
                         <input
                           type="password"
-                          placeholder="New Master Password"
+                          placeholder="New Vault Password"
                           value={newPasswordInput}
                           onChange={(e) => setNewPasswordInput(e.target.value)}
                           className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
