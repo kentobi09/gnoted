@@ -899,26 +899,19 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        <div className={`w-full max-w-md bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-5 flex flex-col items-center text-center shadow-2xl relative z-10 transition-all ${
-          isShapeShaking ? 'border-[#FF3B30] animate-bounce' : ''
-        }`}>
-          <div className="w-12 h-12 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-2.5 border border-[#FF6B00]/30">
-            <ShieldCheck className="w-6 h-6 stroke-[2]" />
+        <div className="w-full max-w-md bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-5 flex flex-col items-center text-center shadow-2xl relative z-10">
+          <div className="my-2 text-center">
+            <h1 className="text-sm font-semibold tracking-wide text-[#8E8E93] uppercase">Interactive Gallery</h1>
           </div>
 
-          <h1 className="text-lg font-bold mb-1 tracking-tight text-white">Security Pattern Challenge</h1>
-          <p className="text-xs text-[#8E8E93] leading-relaxed mb-4">
-            Password Verified ✓ Select shapes to unlock your session.
-          </p>
-
           {/* GRID OF SHAPES IN DIFFERENT COLORS */}
-          <div className="grid grid-cols-3 gap-3 w-full mb-5">
+          <div className="grid grid-cols-3 gap-3 w-full my-4">
             {shapesList.map((item) => (
               <motion.button
                 key={item.id}
-                whileTap={{ scale: 0.85 }}
+                whileTap={{ scale: 0.88 }}
                 onClick={() => handleShapeClick(item.id)}
-                className="w-full aspect-square bg-black border border-[#2C2C2E] hover:border-[#FF6B00] rounded-2xl flex flex-col items-center justify-center p-3 transition-all shadow-md group active:scale-90"
+                className="w-full aspect-square bg-black border border-[#2C2C2E] hover:border-[#3A3A3C] rounded-2xl flex flex-col items-center justify-center p-3 transition-all shadow-md group active:scale-95"
               >
                 <svg viewBox="0 0 100 100" className="w-10 h-10 drop-shadow-lg pointer-events-none">
                   {item.shape === 'circle' && <circle cx="50" cy="50" r="40" fill={item.color} />}
@@ -943,9 +936,9 @@ export default function App() {
               setIsPasswordPassed(false);
               setPentagonTapCount(0);
             }}
-            className="text-xs text-[#8E8E93] hover:text-white transition-colors"
+            className="text-[11px] text-[#636366] hover:text-[#8E8E93] transition-colors mt-2"
           >
-            ← Back to Vault Password
+            ← Back
           </button>
         </div>
       </div>
