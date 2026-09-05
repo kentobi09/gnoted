@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Local scripts
+*.ps1
+build_apk_gdrive.ps1
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
