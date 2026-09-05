@@ -35,7 +35,8 @@ import {
   RotateCcw,
   MailCheck,
   Key,
-  Mail
+  Mail,
+  MoreVertical
 } from 'lucide-react';
 import { 
   getAllEncryptedNotes, 
@@ -237,6 +238,8 @@ export default function App() {
     isSensitive: false
   });
   const [selectedNoteForView, setSelectedNoteForView] = useState<DecryptedNote | null>(null);
+  const [isBbqMenuOpen, setIsBbqMenuOpen] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
 
   const [todos, setTodos] = useState<DecryptedTodo[]>([]);
   const [newTodoTitle, setNewTodoTitle] = useState<string>('');
@@ -290,11 +293,20 @@ export default function App() {
   // Request browser notification permissions on demand
   const handleRequestNotificationPermission = async () => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
-      const perm = await Notification.requestPermission();
-      setNotificationPermission(perm);
-      if (perm === 'granted') {
-        setActiveToastAlert('Deadline notifications enabled successfully.');
+      try {
+        const perm = await Notification.requestPermission();
+        setNotificationPermission(perm);
+        if (perm === 'granted') {
+          setActiveToastAlert('Deadline notifications enabled successfully.');
+        } else if (perm === 'denied') {
+          setActiveToastAlert('Notification permission was blocked in settings.');
+        }
+      } catch (err) {
+        console.error('Notification permission error:', err);
+        setActiveToastAlert('Notification request failed or not supported.');
       }
+    } else {
+      setActiveToastAlert('Notifications API is not supported on this browser/device.');
     }
   };
 
@@ -528,6 +540,33 @@ export default function App() {
     } catch (err) {
       console.error('Save note error:', err);
       setSaveError('Failed to encrypt and save note.');
+    }
+  };
+
+  const handleInlineUpdateNote = async (updatedNote: DecryptedNote) => {
+    setSelectedNoteForView(updatedNote);
+    setNotes((prev) => prev.map((n) => (n.id === updatedNote.id ? updatedNote : n)));
+
+    if (!updatedNote.id) return;
+    try {
+      const encTitle = await encryptText(updatedNote.title || 'Untitled Note');
+      const encContent = await encryptText(updatedNote.content || '');
+      const now = Date.now();
+
+      await saveEncryptedNote({
+        id: updatedNote.id,
+        encryptedTitle: encTitle.ciphertextBase64,
+        titleIv: encTitle.ivBase64,
+        encryptedContent: encContent.ciphertextBase64,
+        contentIv: encContent.ivBase64,
+        categoryTag: updatedNote.categoryTag,
+        isSensitive: updatedNote.categoryTag === 'Passwords' || updatedNote.categoryTag === 'Private Keys' || Boolean(updatedNote.isSensitive),
+        isArchived: Boolean(updatedNote.isArchived),
+        createdAt: updatedNote.createdAt,
+        updatedAt: now
+      });
+    } catch (err) {
+      console.error('Failed to inline update note:', err);
     }
   };
 
@@ -1054,61 +1093,176 @@ export default function App() {
   // DEDICATED NOTE DETAIL VIEW SCREEN
   if (selectedNoteForView) {
     return (
-      <div className="min-h-screen bg-[#08080A] text-white p-4 max-w-md mx-auto font-sans flex flex-col justify-between">
-        <div>
-          <header className="flex items-center justify-between pt-2 pb-4 border-b border-[#27272A]">
-            <button 
-              onClick={() => setSelectedNoteForView(null)}
-              className="w-9 h-9 rounded-full bg-[#111216] border border-[#27272A] flex items-center justify-center text-zinc-400 hover:text-white"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <span className="text-xs font-bold text-[#F59E0B] bg-[#F59E0B]/15 border border-[#F59E0B]/30 px-3 py-1 rounded-pill">
-              {selectedNoteForView.categoryTag}
-            </span>
-            <button
-              onClick={() => handleArchiveNote(selectedNoteForView)}
-              className="w-9 h-9 rounded-full bg-[#111216] border border-[#27272A] flex items-center justify-center text-zinc-400 hover:text-[#FF3B30]"
-              title="Archive Note"
-            >
-              <Archive className="w-4.5 h-4.5" />
-            </button>
-          </header>
+      <div className="fixed inset-0 bg-[#08080A] z-50 overflow-y-auto">
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -40 }}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.4}
+          onDragEnd={(_, info) => {
+            if (Math.abs(info.offset.x) > 80 || Math.abs(info.velocity.x) > 300) {
+              setSelectedNoteForView(null);
+              setIsBbqMenuOpen(false);
+            }
+          }}
+          className="min-h-screen bg-[#08080A] text-white p-4 max-w-md mx-auto font-sans flex flex-col justify-between relative touch-pan-y"
+        >
+          <div className="flex flex-col flex-1">
+            <header className="flex items-center justify-between pt-2 pb-4 border-b border-[#27272A] relative">
+              <button 
+                onClick={() => {
+                  setSelectedNoteForView(null);
+                  setIsBbqMenuOpen(false);
+                }}
+                className="w-9 h-9 rounded-full bg-[#111216] border border-[#27272A] flex items-center justify-center text-zinc-400 hover:text-white"
+                title="Go back"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
 
-          <div className="my-6">
-            <h1 className="text-2xl font-bold text-white tracking-tight mb-2">
-              {selectedNoteForView.title}
-            </h1>
-            <p className="text-xs text-zinc-400">
-              Last updated: {new Date(selectedNoteForView.updatedAt).toLocaleString(undefined, {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </p>
+              <span className="text-xs font-bold text-[#F59E0B] bg-[#F59E0B]/15 border border-[#F59E0B]/30 px-3 py-1 rounded-pill">
+                {selectedNoteForView.categoryTag}
+              </span>
+
+              {/* BBQ Icon Button */}
+              <button
+                onClick={() => setIsBbqMenuOpen(!isBbqMenuOpen)}
+                className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors ${
+                  isBbqMenuOpen
+                    ? 'bg-[#F59E0B] text-black border-[#F59E0B]'
+                    : 'bg-[#111216] border-[#27272A] text-zinc-400 hover:text-white'
+                }`}
+                title="More Options (BBQ Menu)"
+              >
+                <MoreVertical className="w-5 h-5" />
+              </button>
+
+              {/* BBQ MENU POPUP */}
+              <AnimatePresence>
+                {isBbqMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                    className="absolute right-0 top-14 w-56 bg-[#111216] border border-[#27272A] rounded-2xl p-3 shadow-2xl z-50 flex flex-col gap-2"
+                  >
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider px-1">
+                      Modify Category
+                    </span>
+                    <div className="flex flex-col gap-1">
+                      {noteCategories.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => {
+                            handleInlineUpdateNote({
+                              ...selectedNoteForView,
+                              categoryTag: cat,
+                              isSensitive: cat === 'Passwords' || cat === 'Private Keys'
+                            });
+                            setIsBbqMenuOpen(false);
+                          }}
+                          className={`text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-all ${
+                            selectedNoteForView.categoryTag === cat
+                              ? 'bg-[#F59E0B] text-black font-bold'
+                              : 'bg-[#08080A] text-white hover:bg-[#1A1B22] border border-[#27272A]'
+                          }`}
+                        >
+                          <span>{cat}</span>
+                          {selectedNoteForView.categoryTag === cat && (
+                            <Check className="w-3.5 h-3.5 stroke-[3] text-black" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="border-t border-[#27272A] my-1" />
+
+                    <button
+                      onClick={() => {
+                        setIsBbqMenuOpen(false);
+                        setShowDeleteConfirmModal(true);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#FF3B30] bg-[#FF3B30]/10 hover:bg-[#FF3B30]/20 flex items-center gap-2 border border-[#FF3B30]/20 transition-all"
+                    >
+                      <Trash2 className="w-4 h-4 text-[#FF3B30]" />
+                      Delete Note
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </header>
+
+            {/* FULL SCREEN INLINE EDITABLE NOTE */}
+            <div className="my-4 flex flex-col gap-2 flex-1">
+              <input
+                type="text"
+                value={selectedNoteForView.title}
+                onChange={(e) => handleInlineUpdateNote({ ...selectedNoteForView, title: e.target.value })}
+                placeholder="Note Title..."
+                className="w-full bg-transparent border-none text-2xl font-bold text-white focus:outline-none placeholder-zinc-600 tracking-tight"
+              />
+
+              <p className="text-[11px] text-zinc-500 mb-2">
+                Last updated: {new Date(selectedNoteForView.updatedAt).toLocaleString(undefined, {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })} • <span className="text-[#F59E0B]">Swipe left to close</span>
+              </p>
+
+              <textarea
+                value={selectedNoteForView.content}
+                onChange={(e) => handleInlineUpdateNote({ ...selectedNoteForView, content: e.target.value })}
+                placeholder="Type your note content here..."
+                className="w-full flex-1 min-h-[350px] bg-transparent border-none text-sm text-white focus:outline-none resize-none leading-relaxed placeholder-zinc-600"
+              />
+            </div>
           </div>
 
-          <div className="bg-[#111216] border border-[#27272A] rounded-card p-5 min-h-[220px]">
-            <p className="text-sm text-white leading-relaxed whitespace-pre-wrap">
-              {selectedNoteForView.content}
-            </p>
-          </div>
-        </div>
-
-        <div className="pt-6 pb-4 flex items-center gap-3">
-          <button
-            onClick={() => {
-              setEditingNote(selectedNoteForView);
-              setIsEditorOpen(true);
-            }}
-            className="flex-1 bg-[#F59E0B] hover:bg-[#D97706] text-black font-bold py-3.5 rounded-pill shadow-lg flex items-center justify-center gap-2 text-sm"
-          >
-            <Edit3 className="w-4 h-4 text-black" />
-            Edit Note
-          </button>
-        </div>
+          {/* DELETE CONFIRMATION MODAL */}
+          <AnimatePresence>
+            {showDeleteConfirmModal && (
+              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[99]">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="bg-[#111216] border border-[#27272A] rounded-2xl w-full max-w-sm p-5 shadow-2xl text-center"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#FF3B30]/15 border border-[#FF3B30]/30 flex items-center justify-center mx-auto mb-3">
+                    <AlertCircle className="w-6 h-6 text-[#FF3B30]" />
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-1">Delete Note?</h3>
+                  <p className="text-xs text-zinc-400 mb-5 leading-relaxed">
+                    Are you sure you want to delete <span className="text-white font-semibold">"{selectedNoteForView.title}"</span>? This action cannot be undone.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setShowDeleteConfirmModal(false)}
+                      className="flex-1 py-2.5 rounded-pill border border-[#27272A] text-zinc-400 text-xs font-semibold hover:text-white"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await handlePermanentDeleteNote(selectedNoteForView.id);
+                        setShowDeleteConfirmModal(false);
+                        setSelectedNoteForView(null);
+                      }}
+                      className="flex-1 py-2.5 rounded-pill bg-[#FF3B30] hover:bg-[#D32F2F] text-white text-xs font-bold shadow-md"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
     );
   }
@@ -1301,46 +1455,57 @@ export default function App() {
               className="w-full bg-[#08080A] border border-[#27272A] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#F59E0B]"
             />
             
-            <div className="grid grid-cols-3 gap-2 w-full">
-              <div 
-                onClick={openDatePicker}
-                className="bg-[#08080A] border border-[#27272A] hover:border-[#F59E0B] rounded-xl px-2 py-2 flex items-center justify-center gap-1.5 cursor-pointer relative transition-colors"
-                title="Select Task Deadline Date & Time"
-              >
-                <Clock className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
-                <span className="text-[10px] font-medium text-white truncate">
-                  {newTodoDueDate ? formatDueDateDisplay(newTodoDueDate) : 'Date & Time'}
-                </span>
-                <input 
-                  ref={dateInputRef}
-                  type="datetime-local"
-                  value={newTodoDueDate}
-                  onChange={(e) => setNewTodoDueDate(e.target.value)}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                />
-              </div>
-
-              <div className="relative w-full">
-                <select
-                  value={newTodoPriority}
-                  onChange={(e: any) => setNewTodoPriority(e.target.value)}
-                  className="w-full bg-[#08080A] border border-[#27272A] text-[10px] text-white font-medium rounded-xl px-2 py-2.5 focus:outline-none cursor-pointer text-center appearance-none"
+            <div className="flex flex-col gap-2.5">
+              <div className="grid grid-cols-2 gap-2 w-full">
+                <div 
+                  onClick={openDatePicker}
+                  className="bg-[#08080A] border border-[#27272A] hover:border-[#F59E0B] rounded-xl px-3 py-2 flex items-center justify-center gap-1.5 cursor-pointer relative transition-colors"
+                  title="Select Task Deadline Date & Time"
                 >
-                  <option value="urgent" className="text-left bg-[#111216]">🔴 Urgent</option>
-                  <option value="important" className="text-left bg-[#111216]">🟡 Important</option>
-                  <option value="neutral" className="text-left bg-[#111216]">🔵 Neutral</option>
-                  <option value="if_time" className="text-left bg-[#111216]">🟢 Someday</option>
-                </select>
-                <ChevronDown className="w-3 h-3 text-zinc-400 absolute right-2 top-3 pointer-events-none" />
+                  <Clock className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
+                  <span className="text-xs font-medium text-white truncate">
+                    {newTodoDueDate ? formatDueDateDisplay(newTodoDueDate) : 'Set Deadline'}
+                  </span>
+                  <input 
+                    ref={dateInputRef}
+                    type="datetime-local"
+                    value={newTodoDueDate}
+                    onChange={(e) => setNewTodoDueDate(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                </div>
+
+                <button
+                  onClick={handleSaveTodo}
+                  className="bg-[#F59E0B] hover:bg-[#D97706] text-black py-2 rounded-xl text-xs font-bold shadow-md active:scale-95 transition-all w-full flex items-center justify-center gap-1"
+                >
+                  <Plus className="w-4 h-4 stroke-[2.5] text-black" />
+                  Add Task
+                </button>
               </div>
 
-              <button
-                onClick={handleSaveTodo}
-                className="bg-[#F59E0B] hover:bg-[#D97706] text-black py-2 rounded-xl text-[11px] font-bold shadow-md active:scale-95 transition-all w-full flex items-center justify-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5] text-black" />
-                Add
-              </button>
+              <div className="grid grid-cols-4 gap-1.5 pt-1">
+                {(['urgent', 'important', 'neutral', 'if_time'] as TodoPriority[]).map((p) => {
+                  const isSelected = newTodoPriority === p;
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setNewTodoPriority(p)}
+                      className={`py-1.5 px-1 rounded-xl text-[10px] font-bold transition-all border text-center truncate ${
+                        isSelected
+                          ? 'border-[#F59E0B] bg-[#F59E0B] text-black shadow-md shadow-[#F59E0B]/20'
+                          : 'border-[#27272A] bg-[#08080A] text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      {p === 'urgent' && '🔴 Urgent'}
+                      {p === 'important' && '🟡 Import.'}
+                      {p === 'neutral' && '🔵 Neutral'}
+                      {p === 'if_time' && '🟢 Someday'}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -1481,22 +1646,32 @@ export default function App() {
               />
 
               <div className="mb-4">
-                <label className="text-[11px] font-semibold text-zinc-400 block mb-1">
+                <label className="text-[11px] font-semibold text-zinc-400 block mb-1.5">
                   Category Tag:
                 </label>
-                <select
-                  value={editingNote.categoryTag || 'Personal'}
-                  onChange={(e) => setEditingNote({ 
-                    ...editingNote, 
-                    categoryTag: e.target.value,
-                    isSensitive: e.target.value === 'Passwords' || e.target.value === 'Private Keys'
+                <div className="grid grid-cols-3 gap-2">
+                  {noteCategories.map((tag) => {
+                    const isSelected = (editingNote.categoryTag || 'Personal') === tag;
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => setEditingNote({
+                          ...editingNote,
+                          categoryTag: tag,
+                          isSensitive: tag === 'Passwords' || tag === 'Private Keys'
+                        })}
+                        className={`py-2 px-1 rounded-xl text-[11px] font-bold transition-all border text-center truncate ${
+                          isSelected
+                            ? 'bg-[#F59E0B] text-black border-[#F59E0B] shadow-md shadow-[#F59E0B]/20'
+                            : 'bg-[#08080A] text-zinc-400 border-[#27272A] hover:text-white'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    );
                   })}
-                  className="w-full bg-[#08080A] border border-[#27272A] text-xs text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-[#F59E0B]"
-                >
-                  <option value="Personal" className="bg-[#111216]">Personal (Visible)</option>
-                  <option value="Passwords" className="bg-[#111216]">Passwords (Auto-Sensitive)</option>
-                  <option value="Private Keys" className="bg-[#111216]">Private Keys (Auto-Sensitive)</option>
-                </select>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
