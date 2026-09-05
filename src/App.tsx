@@ -818,8 +818,8 @@ export default function App() {
         />
 
         <div className="w-full max-w-sm bg-[#111216] border border-[#27272A] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
-          <div className="w-13 h-13 rounded-2xl bg-[#F59E0B]/15 flex items-center justify-center text-[#F59E0B] mb-5 border border-[#F59E0B]/30">
-            <ShieldCheck className="w-7 h-7 stroke-[2]" />
+          <div className="w-14 h-14 rounded-2xl bg-[#111216] flex items-center justify-center mb-4 border border-[#F59E0B]/30 p-1.5 shadow-lg">
+            <img src="/logo.png" alt="GNOTED Logo" className="w-full h-full object-contain" />
           </div>
 
           <h1 className="text-xl font-bold mb-6 tracking-widest text-white uppercase">GNOTED</h1>
@@ -1009,8 +1009,8 @@ export default function App() {
         />
 
         <div className="w-full max-w-sm bg-[#111216] border border-[#27272A] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
-          <div className="w-13 h-13 rounded-2xl bg-[#F59E0B]/15 flex items-center justify-center text-[#F59E0B] mb-5 border border-[#F59E0B]/30">
-            <Lock className="w-6 h-6 stroke-[2]" />
+          <div className="w-14 h-14 rounded-2xl bg-[#111216] flex items-center justify-center mb-4 border border-[#F59E0B]/30 p-1.5 shadow-lg">
+            <img src="/logo.png" alt="GNOTED Logo" className="w-full h-full object-contain" />
           </div>
 
           <h1 className="text-xl font-bold mb-6 tracking-widest text-white uppercase">GNOTED</h1>
@@ -1123,8 +1123,8 @@ export default function App() {
 
       <header className="flex items-center justify-between pt-2 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-[#F59E0B]/15 flex items-center justify-center text-[#F59E0B] border border-[#F59E0B]/30 font-bold text-xs uppercase">
-            {registeredEmail ? registeredEmail[0] : <User className="w-5 h-5" />}
+          <div className="w-9 h-9 rounded-full bg-[#111216] flex items-center justify-center border border-[#F59E0B]/30 p-0.5 overflow-hidden shadow-sm">
+            <img src="/logo.png" alt="GNOTED Logo" className="w-full h-full object-cover rounded-full" />
           </div>
           <span className="text-base font-bold tracking-wider text-white">GNOTED</span>
         </div>
