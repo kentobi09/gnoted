@@ -179,6 +179,83 @@ function ToastNotificationBanner({
   );
 }
 
+function CustomDropdown<T extends string>({
+  value,
+  options,
+  onChange,
+  placeholder = 'Select...'
+}: {
+  value: T;
+  options: { value: T; label: string; icon?: React.ReactNode }[];
+  onChange: (val: T) => void;
+  placeholder?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const selectedOption = options.find((o) => o.value === value) || options[0];
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full bg-[#08080A] border border-[#27272A] hover:border-[#F59E0B] text-xs text-white rounded-xl px-3 py-2.5 flex items-center justify-between focus:outline-none transition-colors"
+      >
+        <span className="flex items-center gap-2 truncate font-medium">
+          {selectedOption?.icon}
+          {selectedOption?.label || placeholder}
+        </span>
+        <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform shrink-0 ${isOpen ? 'rotate-180 text-[#F59E0B]' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 right-0 top-full mt-1 bg-[#14151B] border border-[#27272A] rounded-xl shadow-2xl z-[99] overflow-hidden py-1"
+          >
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-3.5 py-2.5 text-xs flex items-center justify-between transition-colors ${
+                  opt.value === value
+                    ? 'bg-[#F59E0B]/15 text-[#F59E0B] font-semibold'
+                    : 'text-zinc-200 hover:bg-white/5 font-normal'
+                }`}
+              >
+                <span className="flex items-center gap-2 truncate">
+                  {opt.icon}
+                  {opt.label}
+                </span>
+                {opt.value === value && <Check className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function App() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [activeNavTab, setActiveNavTab] = useState<'notes' | 'todos'>('notes');
@@ -1143,39 +1220,35 @@ export default function App() {
               <AnimatePresence>
                 {isBbqMenuOpen && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                    initial={{ opacity: 0, scale: 0.95, y: -5 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                    className="absolute right-0 top-14 w-56 bg-[#111216] border border-[#27272A] rounded-2xl p-3 shadow-2xl z-50 flex flex-col gap-2"
+                    exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-12 w-48 bg-[#18181B] border border-[#27272A] rounded-xl py-1.5 shadow-2xl z-50 flex flex-col"
                   >
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider px-1">
-                      Modify Category
-                    </span>
-                    <div className="flex flex-col gap-1">
-                      {noteCategories.map((cat) => (
-                        <button
-                          key={cat}
-                          onClick={() => {
-                            handleInlineUpdateNote({
-                              ...selectedNoteForView,
-                              categoryTag: cat,
-                              isSensitive: cat === 'Passwords' || cat === 'Private Keys'
-                            });
-                            setIsBbqMenuOpen(false);
-                          }}
-                          className={`text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-all ${
-                            selectedNoteForView.categoryTag === cat
-                              ? 'bg-[#F59E0B] text-black font-bold'
-                              : 'bg-[#08080A] text-white hover:bg-[#1A1B22] border border-[#27272A]'
-                          }`}
-                        >
-                          <span>{cat}</span>
-                          {selectedNoteForView.categoryTag === cat && (
-                            <Check className="w-3.5 h-3.5 stroke-[3] text-black" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
+                    {noteCategories.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => {
+                          handleInlineUpdateNote({
+                            ...selectedNoteForView,
+                            categoryTag: cat,
+                            isSensitive: cat === 'Passwords' || cat === 'Private Keys'
+                          });
+                          setIsBbqMenuOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-xs transition-colors flex items-center justify-between ${
+                          selectedNoteForView.categoryTag === cat
+                            ? 'text-[#F59E0B] font-semibold bg-white/5'
+                            : 'text-zinc-200 hover:bg-white/5 font-normal'
+                        }`}
+                      >
+                        <span>{cat}</span>
+                        {selectedNoteForView.categoryTag === cat && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
+                        )}
+                      </button>
+                    ))}
 
                     <div className="border-t border-[#27272A] my-1" />
 
@@ -1184,10 +1257,10 @@ export default function App() {
                         setIsBbqMenuOpen(false);
                         setShowDeleteConfirmModal(true);
                       }}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#FF3B30] bg-[#FF3B30]/10 hover:bg-[#FF3B30]/20 flex items-center gap-2 border border-[#FF3B30]/20 transition-all"
+                      className="w-full text-left px-4 py-2.5 text-xs text-[#FF3B30] hover:bg-[#FF3B30]/10 transition-colors flex items-center gap-2"
                     >
-                      <Trash2 className="w-4 h-4 text-[#FF3B30]" />
-                      Delete Note
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete Note</span>
                     </button>
                   </motion.div>
                 )}
@@ -1455,57 +1528,43 @@ export default function App() {
               className="w-full bg-[#08080A] border border-[#27272A] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#F59E0B]"
             />
             
-            <div className="flex flex-col gap-2.5">
-              <div className="grid grid-cols-2 gap-2 w-full">
-                <div 
-                  onClick={openDatePicker}
-                  className="bg-[#08080A] border border-[#27272A] hover:border-[#F59E0B] rounded-xl px-3 py-2 flex items-center justify-center gap-1.5 cursor-pointer relative transition-colors"
-                  title="Select Task Deadline Date & Time"
-                >
-                  <Clock className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
-                  <span className="text-xs font-medium text-white truncate">
-                    {newTodoDueDate ? formatDueDateDisplay(newTodoDueDate) : 'Set Deadline'}
-                  </span>
-                  <input 
-                    ref={dateInputRef}
-                    type="datetime-local"
-                    value={newTodoDueDate}
-                    onChange={(e) => setNewTodoDueDate(e.target.value)}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  />
-                </div>
-
-                <button
-                  onClick={handleSaveTodo}
-                  className="bg-[#F59E0B] hover:bg-[#D97706] text-black py-2 rounded-xl text-xs font-bold shadow-md active:scale-95 transition-all w-full flex items-center justify-center gap-1"
-                >
-                  <Plus className="w-4 h-4 stroke-[2.5] text-black" />
-                  Add Task
-                </button>
+            <div className="grid grid-cols-3 gap-2 w-full items-center">
+              <div 
+                onClick={openDatePicker}
+                className="bg-[#08080A] border border-[#27272A] hover:border-[#F59E0B] rounded-xl px-2.5 py-2.5 flex items-center justify-center gap-1.5 cursor-pointer relative transition-colors"
+                title="Select Task Deadline Date & Time"
+              >
+                <Clock className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
+                <span className="text-xs font-medium text-white truncate">
+                  {newTodoDueDate ? formatDueDateDisplay(newTodoDueDate) : 'Deadline'}
+                </span>
+                <input 
+                  ref={dateInputRef}
+                  type="datetime-local"
+                  value={newTodoDueDate}
+                  onChange={(e) => setNewTodoDueDate(e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
               </div>
 
-              <div className="grid grid-cols-4 gap-1.5 pt-1">
-                {(['urgent', 'important', 'neutral', 'if_time'] as TodoPriority[]).map((p) => {
-                  const isSelected = newTodoPriority === p;
-                  return (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setNewTodoPriority(p)}
-                      className={`py-1.5 px-1 rounded-xl text-[10px] font-bold transition-all border text-center truncate ${
-                        isSelected
-                          ? 'border-[#F59E0B] bg-[#F59E0B] text-black shadow-md shadow-[#F59E0B]/20'
-                          : 'border-[#27272A] bg-[#08080A] text-zinc-400 hover:text-white'
-                      }`}
-                    >
-                      {p === 'urgent' && '🔴 Urgent'}
-                      {p === 'important' && '🟡 Import.'}
-                      {p === 'neutral' && '🔵 Neutral'}
-                      {p === 'if_time' && '🟢 Someday'}
-                    </button>
-                  );
-                })}
-              </div>
+              <CustomDropdown
+                value={newTodoPriority}
+                options={[
+                  { value: 'urgent', label: '🔴 Urgent' },
+                  { value: 'important', label: '🟡 Important' },
+                  { value: 'neutral', label: '🔵 Neutral' },
+                  { value: 'if_time', label: '🟢 Someday' }
+                ]}
+                onChange={(val) => setNewTodoPriority(val as TodoPriority)}
+              />
+
+              <button
+                onClick={handleSaveTodo}
+                className="bg-[#F59E0B] hover:bg-[#D97706] text-black py-2.5 rounded-xl text-xs font-bold shadow-md active:scale-95 transition-all w-full flex items-center justify-center gap-1"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5] text-black" />
+                Add
+              </button>
             </div>
           </div>
 
@@ -1649,29 +1708,19 @@ export default function App() {
                 <label className="text-[11px] font-semibold text-zinc-400 block mb-1.5">
                   Category Tag:
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {noteCategories.map((tag) => {
-                    const isSelected = (editingNote.categoryTag || 'Personal') === tag;
-                    return (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => setEditingNote({
-                          ...editingNote,
-                          categoryTag: tag,
-                          isSensitive: tag === 'Passwords' || tag === 'Private Keys'
-                        })}
-                        className={`py-2 px-1 rounded-xl text-[11px] font-bold transition-all border text-center truncate ${
-                          isSelected
-                            ? 'bg-[#F59E0B] text-black border-[#F59E0B] shadow-md shadow-[#F59E0B]/20'
-                            : 'bg-[#08080A] text-zinc-400 border-[#27272A] hover:text-white'
-                        }`}
-                      >
-                        {tag}
-                      </button>
-                    );
+                <CustomDropdown
+                  value={editingNote.categoryTag || 'Personal'}
+                  options={[
+                    { value: 'Personal', label: 'Personal' },
+                    { value: 'Passwords', label: 'Passwords' },
+                    { value: 'Private Keys', label: 'Private Keys' }
+                  ]}
+                  onChange={(val) => setEditingNote({
+                    ...editingNote,
+                    categoryTag: val,
+                    isSensitive: val === 'Passwords' || val === 'Private Keys'
                   })}
-                </div>
+                />
               </div>
 
               <div className="flex items-center gap-2">
