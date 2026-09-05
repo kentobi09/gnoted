@@ -11,13 +11,14 @@ export default {
       },
       colors: {
         vault: {
-          bg: '#000000',
-          card: '#1C1C1E',
-          cardBorder: '#2C2C2E',
-          orange: '#FF6B00',
-          orangeDark: '#E66000',
-          textMuted: '#8E8E93',
-          textSubtle: '#636366',
+          bg: '#080A10',
+          card: '#121722',
+          cardBorder: '#1E293B',
+          cyan: '#06B6D4',
+          cyanLight: '#38BDF8',
+          cyanDark: '#0284C7',
+          textMuted: '#94A3B8',
+          textSubtle: '#64748B',
         }
       },
       borderRadius: {

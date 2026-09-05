@@ -159,7 +159,7 @@ function ToastNotificationBanner({
           }}
           className="fixed top-4 left-4 right-4 max-w-md mx-auto z-[9999] pointer-events-auto touch-pan-x cursor-grab active:cursor-grabbing select-none"
         >
-          <div className="bg-[#FF6B00] text-white p-3.5 px-4 rounded-2xl shadow-2xl flex items-center justify-between border border-white/25 backdrop-blur-md">
+          <div className="bg-gradient-to-r from-[#06B6D4] to-[#0284C7] text-white p-3.5 px-4 rounded-2xl shadow-xl shadow-[#06B6D4]/25 flex items-center justify-between border border-white/25 backdrop-blur-md">
             <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
               <BellRing className="w-5 h-5 shrink-0 text-white" />
               <p className="text-xs font-semibold leading-snug break-words text-white">{message}</p>
@@ -880,19 +880,19 @@ export default function App() {
   // ────────────────── REGISTRATION PROCESS (PASSWORD-ONLY) ──────────────────
   if (!isRegistered) {
     return (
-      <div className="min-h-screen bg-[#0A0B0E] text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+      <div className="min-h-screen bg-[#080A10] text-[#F8FAFC] flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
         {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
         <ToastNotificationBanner 
           message={activeToastAlert} 
           onClose={() => setActiveToastAlert('')} 
         />
 
-        <div className="w-full max-w-sm bg-[#14151B] border border-white/[0.08] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
-          <div className="w-13 h-13 rounded-2xl bg-[#FF6B00]/10 flex items-center justify-center text-[#FF6B00] mb-5 border border-[#FF6B00]/20">
+        <div className="w-full max-w-sm bg-[#121722] border border-[#1E293B] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
+          <div className="w-13 h-13 rounded-2xl bg-[#06B6D4]/15 flex items-center justify-center text-[#38BDF8] mb-5 border border-[#06B6D4]/30">
             <ShieldCheck className="w-7 h-7 stroke-[2]" />
           </div>
 
-          <h1 className="text-xl font-bold mb-6 tracking-widest text-white uppercase">GNOTED</h1>
+          <h1 className="text-xl font-bold mb-6 tracking-widest text-[#F8FAFC] uppercase">GNOTED</h1>
 
           {regError && (
             <div className="bg-[#FF3B30]/10 border border-[#FF3B30]/25 rounded-xl p-2.5 mb-4 text-xs text-[#FF3B30] w-full text-left">
@@ -907,12 +907,12 @@ export default function App() {
                 placeholder="Passcode"
                 value={regPassword}
                 onChange={(e) => setRegPassword(e.target.value)}
-                className="w-full bg-[#0A0B0E] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#6B7280] focus:outline-none focus:border-[#FF6B00]"
+                className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl pl-4 pr-10 py-3 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#06B6D4]"
               />
               <button
                 type="button"
                 onClick={() => setShowPasswordText(!showPasswordText)}
-                className="absolute right-3 top-3.5 text-[#9CA3AF] hover:text-white"
+                className="absolute right-3 top-3.5 text-[#94A3B8] hover:text-[#F8FAFC]"
               >
                 {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -925,22 +925,22 @@ export default function App() {
                 value={regConfirmPassword}
                 onChange={(e) => setRegConfirmPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateVaultPassword()}
-                className="w-full bg-[#0A0B0E] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#6B7280] focus:outline-none focus:border-[#FF6B00]"
+                className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl pl-4 pr-10 py-3 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#06B6D4]"
               />
               <button
                 type="button"
                 onClick={() => setShowPasswordText(!showPasswordText)}
-                className="absolute right-3 top-3.5 text-[#9CA3AF] hover:text-white"
+                className="absolute right-3 top-3.5 text-[#94A3B8] hover:text-[#F8FAFC]"
               >
                 {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
 
             <div className="w-full text-left mt-1">
-              <label className="text-xs font-medium text-[#9CA3AF] block mb-1.5">
+              <label className="text-xs font-medium text-[#94A3B8] block mb-1.5">
                 Secret Verification Shape:
               </label>
-              <div className="grid grid-cols-4 gap-2 bg-[#0A0B0E] p-2.5 rounded-xl border border-white/10">
+              <div className="grid grid-cols-4 gap-2 bg-[#080A10] p-2.5 rounded-xl border border-[#1E293B]">
                 {AVAILABLE_SHAPES.map((s) => (
                   <button
                     key={s.id}
@@ -948,12 +948,12 @@ export default function App() {
                     onClick={() => setRegSelectedShape(s.id)}
                     className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
                       regSelectedShape === s.id
-                        ? 'border-[#FF6B00] bg-[#FF6B00]/15 scale-105 shadow-md'
-                        : 'border-white/5 hover:border-white/20 bg-[#14151B]'
+                        ? 'border-[#06B6D4] bg-[#06B6D4]/20 scale-105 shadow-md'
+                        : 'border-[#1E293B] hover:border-slate-700 bg-[#121722]'
                     }`}
                   >
                     <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
-                    <span className="text-[9px] text-[#9CA3AF] mt-1 truncate max-w-full leading-tight">
+                    <span className="text-[9px] text-[#94A3B8] mt-1 truncate max-w-full leading-tight">
                       {s.label.split(' ')[0]}
                     </span>
                   </button>
@@ -962,7 +962,7 @@ export default function App() {
             </div>
 
             <div className="w-full text-left">
-              <label className="text-xs font-medium text-[#9CA3AF] block mb-1.5">
+              <label className="text-xs font-medium text-[#94A3B8] block mb-1.5">
                 Required Consecutive Taps:
               </label>
               <div className="flex items-center gap-1.5">
@@ -973,8 +973,8 @@ export default function App() {
                     onClick={() => setRegSelectedTaps(num)}
                     className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
                       regSelectedTaps === num
-                        ? 'bg-[#FF6B00] text-white border-[#FF6B00] shadow-md'
-                        : 'bg-[#0A0B0E] text-[#9CA3AF] border-white/10 hover:text-white'
+                        ? 'bg-[#06B6D4] text-white border-[#06B6D4] shadow-md'
+                        : 'bg-[#080A10] text-[#94A3B8] border-[#1E293B] hover:text-[#F8FAFC]'
                     }`}
                   >
                     {num}×
@@ -985,7 +985,7 @@ export default function App() {
 
             <button
               onClick={handleCreateVaultPassword}
-              className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-medium py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm mt-2"
+              className="w-full bg-[#06B6D4] hover:bg-[#0284C7] active:scale-[0.98] transition-all text-white font-medium py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm mt-2"
             >
               <Key className="w-4 h-4" />
               Create Account & Enter GNOTED
@@ -1003,7 +1003,7 @@ export default function App() {
       { id: 'rose_crescent', color: '#FF375F', shape: 'crescent', top: '18%', left: '72%', size: 88, rotate: -35, opacity: 0.8 },
       { id: 'gold_star', color: '#FFD60A', shape: 'star', top: '14%', left: '44%', size: 64, rotate: 24, opacity: 0.9 },
       { id: 'purple_hexagon', color: '#AF52DE', shape: 'hexagon', top: '40%', left: '16%', size: 94, rotate: -18, opacity: 0.85 },
-      { id: 'orange_pentagon', color: '#FF6B00', shape: 'pentagon', top: '46%', left: '60%', size: 100, rotate: 12, opacity: 0.95 },
+      { id: 'orange_pentagon', color: '#06B6D4', shape: 'pentagon', top: '46%', left: '60%', size: 100, rotate: 12, opacity: 0.95 },
       { id: 'green_square', color: '#34C759', shape: 'square', top: '30%', left: '80%', size: 70, rotate: 38, opacity: 0.8 },
       { id: 'red_triangle', color: '#FF3B30', shape: 'triangle', top: '66%', left: '10%', size: 92, rotate: -22, opacity: 0.85 },
       { id: 'yellow_diamond', color: '#FFCC00', shape: 'diamond', top: '76%', left: '42%', size: 78, rotate: 15, opacity: 0.9 },
@@ -1014,7 +1014,7 @@ export default function App() {
     ];
 
     return (
-      <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-[#0B0C10] via-[#07080B] to-[#040406] overflow-hidden select-none z-50 font-sans">
+      <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-[#0B101D] via-[#070B14] to-[#04060A] overflow-hidden select-none z-50 font-sans">
         {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
         <ToastNotificationBanner 
           message={activeToastAlert} 
@@ -1054,19 +1054,19 @@ export default function App() {
   // ────────────────── LOCK SCREEN (PASSWORD-ONLY RETURNING USER) ──────────────────
   if (!isUnlocked && !isPasswordPassed) {
     return (
-      <div className="min-h-screen bg-[#0A0B0E] text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+      <div className="min-h-screen bg-[#080A10] text-[#F8FAFC] flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
         {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
         <ToastNotificationBanner 
           message={activeToastAlert} 
           onClose={() => setActiveToastAlert('')} 
         />
 
-        <div className="w-full max-w-sm bg-[#14151B] border border-white/[0.08] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
-          <div className="w-13 h-13 rounded-2xl bg-[#FF6B00]/10 flex items-center justify-center text-[#FF6B00] mb-5 border border-[#FF6B00]/20">
+        <div className="w-full max-w-sm bg-[#121722] border border-[#1E293B] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
+          <div className="w-13 h-13 rounded-2xl bg-[#06B6D4]/15 flex items-center justify-center text-[#38BDF8] mb-5 border border-[#06B6D4]/30">
             <Lock className="w-6 h-6 stroke-[2]" />
           </div>
 
-          <h1 className="text-xl font-bold mb-6 tracking-widest text-white uppercase">GNOTED</h1>
+          <h1 className="text-xl font-bold mb-6 tracking-widest text-[#F8FAFC] uppercase">GNOTED</h1>
 
           {lockError && (
             <div className="bg-[#FF3B30]/10 border border-[#FF3B30]/25 rounded-xl p-2.5 mb-4 text-xs text-[#FF3B30] w-full text-left">
@@ -1081,12 +1081,12 @@ export default function App() {
               value={enteredPassword}
               onChange={(e) => setEnteredPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLoginPasswordStepSubmit()}
-              className="w-full bg-[#0A0B0E] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#6B7280] focus:outline-none focus:border-[#FF6B00]"
+              className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl pl-4 pr-10 py-3 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#06B6D4]"
             />
             <button
               type="button"
               onClick={() => setShowPasswordText(!showPasswordText)}
-              className="absolute right-3 top-3.5 text-[#9CA3AF] hover:text-white"
+              className="absolute right-3 top-3.5 text-[#94A3B8] hover:text-[#F8FAFC]"
             >
               {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -1094,7 +1094,7 @@ export default function App() {
 
           <button
             onClick={handleLoginPasswordStepSubmit}
-            className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-medium py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm"
+            className="w-full bg-[#06B6D4] hover:bg-[#0284C7] active:scale-[0.98] transition-all text-white font-medium py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm"
           >
             <Unlock className="w-4 h-4" />
             Unlock
@@ -1168,7 +1168,7 @@ export default function App() {
 
   // MAIN DASHBOARD
   return (
-    <div className="min-h-screen bg-black text-white p-4 max-w-md mx-auto pb-32 font-sans relative">
+    <div className="min-h-screen bg-[#080A10] text-[#F8FAFC] p-4 max-w-md mx-auto pb-32 font-sans relative">
       {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
       <ToastNotificationBanner 
         message={activeToastAlert} 
@@ -1177,23 +1177,23 @@ export default function App() {
 
       <header className="flex items-center justify-between pt-2 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] border border-[#FF6B00]/30 font-bold text-xs uppercase">
+          <div className="w-9 h-9 rounded-full bg-[#06B6D4]/15 flex items-center justify-center text-[#38BDF8] border border-[#06B6D4]/30 font-bold text-xs uppercase">
             {registeredEmail ? registeredEmail[0] : <User className="w-5 h-5" />}
           </div>
-          <span className="text-base font-bold tracking-wider text-white">GNOTED</span>
+          <span className="text-base font-bold tracking-wider text-[#F8FAFC]">GNOTED</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleSyncAllNotesToGDrive}
             disabled={isSyncingGDrive}
-            className="w-9 h-9 rounded-full bg-[#1C1C1E] border border-[#2C2C2E] flex items-center justify-center text-[#FF6B00] hover:text-white disabled:opacity-50"
+            className="w-9 h-9 rounded-full bg-[#121722] border border-[#1E293B] flex items-center justify-center text-[#38BDF8] hover:text-[#F8FAFC] disabled:opacity-50 transition-colors"
             title="Upload Directly to Google Drive Webhook"
           >
             <FolderSync className={`w-4.5 h-4.5 ${isSyncingGDrive ? 'animate-spin' : ''}`} />
           </button>
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="w-9 h-9 rounded-full bg-[#1C1C1E] border border-[#2C2C2E] flex items-center justify-center text-[#8E8E93] hover:text-white"
+            className="w-9 h-9 rounded-full bg-[#121722] border border-[#1E293B] flex items-center justify-center text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
             title="Settings & Security"
           >
             <Settings className="w-4 h-4" />
@@ -1202,7 +1202,7 @@ export default function App() {
             onClick={() => {
               setIsUnlocked(false);
             }}
-            className="w-9 h-9 rounded-full bg-[#1C1C1E] border border-[#2C2C2E] flex items-center justify-center text-[#8E8E93] hover:text-white"
+            className="w-9 h-9 rounded-full bg-[#121722] border border-[#1E293B] flex items-center justify-center text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
             title="Lock App"
           >
             <Lock className="w-4 h-4" />
@@ -1211,7 +1211,7 @@ export default function App() {
       </header>
 
       <div className="my-2">
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-[#F8FAFC]">
           {activeNavTab === 'notes' ? 'My Notes' : 'To-Do Tasks'}
         </h1>
       </div>
@@ -1220,13 +1220,13 @@ export default function App() {
       {activeNavTab === 'notes' && (
         <div>
           <div className="relative my-4">
-            <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-[#636366]" />
+            <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-[#64748B]" />
             <input 
               type="text"
               placeholder="Search notes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#1C1C1E] border border-[#2C2C2E] rounded-card pl-10 pr-4 py-2.5 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00] transition-colors"
+              className="w-full bg-[#121722] border border-[#1E293B] rounded-2xl pl-10 pr-4 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#06B6D4] transition-colors"
             />
           </div>
 
@@ -1237,8 +1237,8 @@ export default function App() {
                 onClick={() => setSelectedTag(tag)}
                 className={`px-4 py-2 rounded-pill text-xs font-semibold whitespace-nowrap transition-all ${
                   selectedTag === tag 
-                    ? 'bg-[#FF6B00] text-white shadow-sm' 
-                    : 'bg-[#1C1C1E] text-white border border-[#2C2C2E] hover:bg-[#252528]'
+                    ? 'bg-[#06B6D4] text-white shadow-md shadow-[#06B6D4]/20' 
+                    : 'bg-[#121722] text-[#F8FAFC] border border-[#1E293B] hover:bg-[#1A2332]'
                 }`}
               >
                 {tag}
@@ -1256,11 +1256,11 @@ export default function App() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     onClick={() => setSelectedNoteForView(note)}
-                    className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-4 flex flex-col justify-between min-h-[140px] cursor-pointer hover:border-[#FF6B00]/60 transition-all active:scale-[0.98]"
+                    className="bg-[#121722] border border-[#1E293B] rounded-2xl p-4 flex flex-col justify-between min-h-[140px] cursor-pointer hover:border-[#06B6D4]/60 transition-all active:scale-[0.98]"
                   >
                     <div>
                       <div className="flex items-start justify-between mb-2">
-                        <span className="text-[11px] font-medium text-[#FF6B00] bg-[#FF6B00]/15 px-2 py-0.5 rounded-md">
+                        <span className="text-[11px] font-medium text-[#38BDF8] bg-[#06B6D4]/15 px-2 py-0.5 rounded-md">
                           {note.categoryTag}
                         </span>
                         <button
@@ -1268,28 +1268,28 @@ export default function App() {
                             e.stopPropagation();
                             handleArchiveNote(note);
                           }}
-                          className="text-[#636366] hover:text-[#FF3B30] p-0.5"
+                          className="text-[#64748B] hover:text-[#FF3B30] p-0.5"
                           title="Archive Note"
                         >
                           <Archive className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
-                      <h3 className="font-semibold text-sm text-white mb-1 leading-snug line-clamp-1">
+                      <h3 className="font-semibold text-sm text-[#F8FAFC] mb-1 leading-snug line-clamp-1">
                         {note.title}
                       </h3>
 
-                      <p className="text-xs text-[#8E8E93] leading-relaxed line-clamp-2">
+                      <p className="text-xs text-[#94A3B8] leading-relaxed line-clamp-2">
                         {note.isSensitive ? '••••••••••••' : note.content}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between pt-3 mt-2 border-t border-[#2C2C2E]/60">
-                      <span className="text-[10px] text-[#636366]">
+                    <div className="flex items-center justify-between pt-3 mt-2 border-t border-[#1E293B]">
+                      <span className="text-[10px] text-[#64748B]">
                         {new Date(note.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                       </span>
                       {note.isSensitive && (
-                        <span className="text-[10px] text-[#FF6B00] font-medium">
+                        <span className="text-[10px] text-[#38BDF8] font-medium">
                           Sensitive
                         </span>
                       )}
@@ -1301,8 +1301,8 @@ export default function App() {
           </div>
 
           {filteredNotes.length === 0 && (
-            <div className="text-center py-16 text-[#636366]">
-              <p className="text-sm font-medium text-[#8E8E93]">No {selectedTag} notes</p>
+            <div className="text-center py-16 text-[#64748B]">
+              <p className="text-sm font-medium text-[#94A3B8]">No {selectedTag} notes</p>
               <p className="text-xs mt-1">Tap 'Add Note' below to create one.</p>
             </div>
           )}
@@ -1320,7 +1320,7 @@ export default function App() {
                 });
                 setIsEditorOpen(true);
               }}
-              className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-3.5 rounded-pill shadow-lg flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-all"
+              className="w-full bg-gradient-to-r from-[#06B6D4] to-[#0284C7] hover:from-[#0891B2] hover:to-[#0369A1] text-white font-medium py-3.5 rounded-pill shadow-xl shadow-[#06B6D4]/25 flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-all"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               Add Note
@@ -1333,14 +1333,14 @@ export default function App() {
       {activeNavTab === 'todos' && (
         <div className="mt-2 w-full overflow-hidden">
           {notificationPermission !== 'granted' && (
-            <div className="bg-[#1C1C1E] border border-[#FF6B00]/40 rounded-card p-3 mb-4 flex items-center justify-between">
+            <div className="bg-[#121722] border border-[#06B6D4]/40 rounded-2xl p-3 mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <Bell className="w-4 h-4 text-[#FF6B00] shrink-0" />
+                <Bell className="w-4 h-4 text-[#38BDF8] shrink-0" />
                 <span className="text-xs text-white font-medium">Enable task deadline notifications</span>
               </div>
               <button
                 onClick={handleRequestNotificationPermission}
-                className="bg-[#FF6B00] hover:bg-[#E66000] text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm"
+                className="bg-[#06B6D4] hover:bg-[#0284C7] text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm"
               >
                 Enable
               </button>
@@ -1354,24 +1354,24 @@ export default function App() {
             </div>
           )}
 
-          <div className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-3.5 flex flex-col gap-3 mb-4 w-full">
+          <div className="bg-[#121722] border border-[#1E293B] rounded-2xl p-3.5 flex flex-col gap-3 mb-4 w-full">
             <input 
               type="text"
               placeholder="Add a new task title..."
               value={newTodoTitle}
               onChange={(e) => setNewTodoTitle(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSaveTodo()}
-              className="w-full bg-black border border-[#2C2C2E] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
+              className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl px-3.5 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#06B6D4]"
             />
             
             <div className="grid grid-cols-3 gap-2 w-full">
               <div 
                 onClick={openDatePicker}
-                className="bg-black border border-[#2C2C2E] hover:border-[#FF6B00] rounded-xl px-2 py-2 flex items-center justify-center gap-1.5 cursor-pointer relative transition-colors"
+                className="bg-[#080A10] border border-[#1E293B] hover:border-[#06B6D4] rounded-xl px-2 py-2 flex items-center justify-center gap-1.5 cursor-pointer relative transition-colors"
                 title="Select Task Deadline Date & Time"
               >
-                <Clock className="w-3.5 h-3.5 text-[#FF6B00] shrink-0" />
-                <span className="text-[10px] font-medium text-white truncate">
+                <Clock className="w-3.5 h-3.5 text-[#38BDF8] shrink-0" />
+                <span className="text-[10px] font-medium text-[#F8FAFC] truncate">
                   {newTodoDueDate ? formatDueDateDisplay(newTodoDueDate) : 'Date & Time'}
                 </span>
                 <input 
@@ -1387,19 +1387,19 @@ export default function App() {
                 <select
                   value={newTodoPriority}
                   onChange={(e: any) => setNewTodoPriority(e.target.value)}
-                  className="w-full bg-black border border-[#2C2C2E] text-[10px] text-white font-medium rounded-xl px-2 py-2.5 focus:outline-none cursor-pointer text-center appearance-none"
+                  className="w-full bg-[#080A10] border border-[#1E293B] text-[10px] text-[#F8FAFC] font-medium rounded-xl px-2 py-2.5 focus:outline-none cursor-pointer text-center appearance-none"
                 >
                   <option value="urgent" className="text-left">🔴 Urgent</option>
-                  <option value="important" className="text-left">🟠 Important</option>
-                  <option value="neutral" className="text-left">🔵 Neutral</option>
+                  <option value="important" className="text-left">🔵 Important</option>
+                  <option value="neutral" className="text-left">⚪ Neutral</option>
                   <option value="if_time" className="text-left">🟢 Someday</option>
                 </select>
-                <ChevronDown className="w-3 h-3 text-[#8E8E93] absolute right-2 top-3 pointer-events-none" />
+                <ChevronDown className="w-3 h-3 text-[#94A3B8] absolute right-2 top-3 pointer-events-none" />
               </div>
 
               <button
                 onClick={handleSaveTodo}
-                className="bg-[#FF6B00] hover:bg-[#E66000] text-white py-2 rounded-xl text-[11px] font-semibold shadow-md active:scale-95 transition-all w-full flex items-center justify-center gap-1"
+                className="bg-[#06B6D4] hover:bg-[#0284C7] text-white py-2 rounded-xl text-[11px] font-semibold shadow-md active:scale-95 transition-all w-full flex items-center justify-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                 Add
@@ -1420,18 +1420,18 @@ export default function App() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-3.5 flex items-center justify-between group"
+                    className="bg-[#121722] border border-[#1E293B] rounded-2xl p-3.5 flex items-center justify-between group"
                   >
                     <div 
                       onClick={() => handleToggleTodo(todo)}
                       className="flex items-center gap-3 flex-1 cursor-pointer"
                     >
-                      <div className="w-5 h-5 rounded-md border border-[#3A3A3C] bg-black flex items-center justify-center hover:border-[#FF6B00]">
-                        <Check className="w-3.5 h-3.5 stroke-[3] text-transparent hover:text-[#FF6B00]" />
+                      <div className="w-5 h-5 rounded-md border border-[#1E293B] bg-[#080A10] flex items-center justify-center hover:border-[#06B6D4]">
+                        <Check className="w-3.5 h-3.5 stroke-[3] text-transparent hover:text-[#06B6D4]" />
                       </div>
                       <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-white">
+                          <span className="text-sm font-medium text-[#F8FAFC]">
                             {todo.title}
                           </span>
                           <span 
@@ -1444,9 +1444,9 @@ export default function App() {
 
                         {todo.dueDate && (
                           <div className="flex items-center gap-1 mt-0.5">
-                            <Clock className="w-3 h-3 text-[#8E8E93]" />
+                            <Clock className="w-3 h-3 text-[#94A3B8]" />
                             <span className={`text-[10px] font-medium ${
-                              isDueSoonOrOverdue ? 'text-[#FF3B30]' : 'text-[#8E8E93]'
+                              isDueSoonOrOverdue ? 'text-[#FF3B30]' : 'text-[#94A3B8]'
                             }`}>
                               Due: {formatDueDateDisplay(todo.dueDate)} {isDueSoonOrOverdue ? '(Due Now)' : ''}
                             </span>
@@ -1457,7 +1457,7 @@ export default function App() {
 
                     <button
                       onClick={() => handleToggleTodo(todo)}
-                      className="text-xs text-[#FF6B00] bg-[#FF6B00]/10 hover:bg-[#FF6B00]/20 px-2.5 py-1 rounded-lg font-medium"
+                      className="text-xs text-[#38BDF8] bg-[#06B6D4]/10 hover:bg-[#06B6D4]/20 px-2.5 py-1 rounded-lg font-medium"
                     >
                       Done
                     </button>
@@ -1468,8 +1468,8 @@ export default function App() {
           </div>
 
           {activeTodos.length === 0 && (
-            <div className="text-center py-16 text-[#636366]">
-              <p className="text-sm font-medium text-[#8E8E93]">No active tasks</p>
+            <div className="text-center py-16 text-[#64748B]">
+              <p className="text-sm font-medium text-[#94A3B8]">No active tasks</p>
               <p className="text-xs mt-1">Add a task above. Finished tasks move to History.</p>
             </div>
           )}
@@ -1477,11 +1477,11 @@ export default function App() {
       )}
 
       {/* BOTTOM NAVIGATION BAR */}
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#1C1C1E]/95 backdrop-blur-md border-t border-[#2C2C2E] px-6 py-2.5 flex items-center justify-around z-40">
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#080A10]/95 backdrop-blur-md border-t border-[#1E293B] px-6 py-2.5 flex items-center justify-around z-40">
         <button
           onClick={() => setActiveNavTab('notes')}
           className={`flex flex-col items-center gap-1 py-1 px-8 rounded-xl transition-all ${
-            activeNavTab === 'notes' ? 'text-[#FF6B00]' : 'text-[#8E8E93] hover:text-white'
+            activeNavTab === 'notes' ? 'text-[#06B6D4]' : 'text-[#94A3B8] hover:text-[#F8FAFC]'
           }`}
         >
           <FileText className="w-5 h-5" />
@@ -1491,7 +1491,7 @@ export default function App() {
         <button
           onClick={() => setActiveNavTab('todos')}
           className={`flex flex-col items-center gap-1 py-1 px-8 rounded-xl transition-all ${
-            activeNavTab === 'todos' ? 'text-[#FF6B00]' : 'text-[#8E8E93] hover:text-white'
+            activeNavTab === 'todos' ? 'text-[#06B6D4]' : 'text-[#94A3B8] hover:text-[#F8FAFC]'
           }`}
         >
           <CheckSquare className="w-5 h-5" />
@@ -1507,15 +1507,15 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-card w-full max-w-sm p-5 shadow-2xl"
+              className="bg-[#121722] border border-[#1E293B] rounded-2xl w-full max-w-sm p-5 shadow-2xl"
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold text-white">
+                <h2 className="text-base font-bold text-[#F8FAFC]">
                   {editingNote.id ? 'Edit Note' : 'Add Encrypted Note'}
                 </h2>
                 <button 
                   onClick={() => setIsEditorOpen(false)}
-                  className="text-[#8E8E93] hover:text-white"
+                  className="text-[#94A3B8] hover:text-[#F8FAFC]"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1532,7 +1532,7 @@ export default function App() {
                 placeholder="Note Title"
                 value={editingNote.title || ''}
                 onChange={(e) => setEditingNote({ ...editingNote, title: e.target.value })}
-                className="w-full bg-black border border-[#2C2C2E] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-[#636366] mb-3 focus:outline-none focus:border-[#FF6B00]"
+                className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl px-3.5 py-2.5 text-sm text-[#F8FAFC] placeholder-[#64748B] mb-3 focus:outline-none focus:border-[#06B6D4]"
               />
 
               <textarea
@@ -1540,11 +1540,11 @@ export default function App() {
                 value={editingNote.content || ''}
                 onChange={(e) => setEditingNote({ ...editingNote, content: e.target.value })}
                 rows={4}
-                className="w-full bg-black border border-[#2C2C2E] rounded-xl p-3.5 text-sm text-white placeholder-[#636366] mb-3 focus:outline-none focus:border-[#FF6B00] resize-none"
+                className="w-full bg-[#080A10] border border-[#1E293B] rounded-xl p-3.5 text-sm text-[#F8FAFC] placeholder-[#64748B] mb-3 focus:outline-none focus:border-[#06B6D4] resize-none"
               />
 
               <div className="mb-4">
-                <label className="text-[11px] font-semibold text-[#8E8E93] block mb-1">
+                <label className="text-[11px] font-semibold text-[#94A3B8] block mb-1">
                   Category Tag:
                 </label>
                 <select
@@ -1554,7 +1554,7 @@ export default function App() {
                     categoryTag: e.target.value,
                     isSensitive: e.target.value === 'Passwords' || e.target.value === 'Private Keys'
                   })}
-                  className="w-full bg-black border border-[#2C2C2E] text-xs text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-[#FF6B00]"
+                  className="w-full bg-[#080A10] border border-[#1E293B] text-xs text-[#F8FAFC] rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-[#06B6D4]"
                 >
                   <option value="Personal">Personal (Visible)</option>
                   <option value="Passwords">Passwords (Auto-Sensitive)</option>
@@ -1565,13 +1565,13 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsEditorOpen(false)}
-                  className="flex-1 py-2.5 rounded-pill border border-[#2C2C2E] text-[#8E8E93] text-xs font-semibold hover:text-white"
+                  className="flex-1 py-2.5 rounded-pill border border-[#1E293B] text-[#94A3B8] text-xs font-semibold hover:text-[#F8FAFC]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveNote}
-                  className="flex-1 py-2.5 rounded-pill bg-[#FF6B00] hover:bg-[#E66000] text-white text-xs font-semibold shadow-md"
+                  className="flex-1 py-2.5 rounded-pill bg-[#06B6D4] hover:bg-[#0284C7] text-white text-xs font-semibold shadow-md"
                 >
                   Save Note
                 </button>
@@ -1589,11 +1589,11 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#1C1C1E] border border-[#2C2C2E] rounded-card w-full max-w-sm p-5 shadow-2xl max-h-[85vh] overflow-y-auto no-scrollbar"
+              className="bg-[#121722] border border-[#1E293B] rounded-2xl w-full max-w-sm p-5 shadow-2xl max-h-[85vh] overflow-y-auto no-scrollbar"
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-[#FF6B00]" />
+                <h2 className="text-base font-bold text-[#F8FAFC] flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-[#38BDF8]" />
                   GNOTED Settings & Security
                 </h2>
                 <button 
@@ -1603,14 +1603,14 @@ export default function App() {
                     setIsHistoryAuthenticated(false);
                     setBackupStatus('');
                   }}
-                  className="text-[#8E8E93] hover:text-white"
+                  className="text-[#94A3B8] hover:text-[#F8FAFC]"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {backupStatus && (
-                <div className="bg-[#FF6B00]/15 border border-[#FF6B00]/30 rounded-xl p-2.5 mb-4 text-xs text-[#FF6B00] leading-relaxed">
+                <div className="bg-[#06B6D4]/15 border border-[#06B6D4]/30 rounded-xl p-2.5 mb-4 text-xs text-[#38BDF8] leading-relaxed">
                   {backupStatus}
                 </div>
               )}
@@ -1619,21 +1619,21 @@ export default function App() {
                 <div className="flex flex-col gap-4">
                   {/* SECTION 1: SECURITY & PASSCODE */}
                   <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#8E8E93] mb-1.5 px-0.5">
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#38BDF8] mb-1.5 px-0.5">
                       Security & Passcode
                     </h3>
-                    <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
+                    <div className="bg-[#080A10] border border-[#1E293B] rounded-xl p-3.5 flex flex-col gap-3">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-white flex items-center gap-1.5">
-                          <KeyRound className="w-4 h-4 text-[#FF6B00]" />
+                        <label className="text-xs font-semibold text-[#F8FAFC] flex items-center gap-1.5">
+                          <KeyRound className="w-4 h-4 text-[#38BDF8]" />
                           GNOTED Security & Verification
                         </label>
                         <button
                           onClick={() => setIsEditingPassword(!isEditingPassword)}
                           className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
                             isEditingPassword 
-                              ? 'bg-[#FF6B00] text-white' 
-                              : 'bg-[#1C1C1E] border border-[#2C2C2E] text-[#8E8E93] hover:text-white'
+                              ? 'bg-[#06B6D4] text-white' 
+                              : 'bg-[#121722] border border-[#1E293B] text-[#94A3B8] hover:text-[#F8FAFC]'
                           }`}
                           title={isEditingPassword ? 'Collapse Settings' : 'Edit Security Settings'}
                         >
@@ -1643,7 +1643,7 @@ export default function App() {
 
                       {/* EXPANDED EDIT DETAILS FORM */}
                       {isEditingPassword && (
-                        <div className="flex flex-col gap-3 pt-2.5 border-t border-[#2C2C2E]">
+                        <div className="flex flex-col gap-3 pt-2.5 border-t border-[#1E293B]">
                           {passwordChangeStatus && (
                             <span className={`text-[11px] font-medium ${passwordChangeStatus.includes('must be') ? 'text-[#FF3B30]' : 'text-[#34C759]'}`}>
                               {passwordChangeStatus}
@@ -1651,7 +1651,7 @@ export default function App() {
                           )}
 
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-[#8E8E93]">
+                            <label className="text-[11px] font-semibold text-[#94A3B8]">
                               Update Passcode (Optional):
                             </label>
                             <input
@@ -1659,15 +1659,15 @@ export default function App() {
                               placeholder="New passcode (optional)"
                               value={newPasswordInput}
                               onChange={(e) => setNewPasswordInput(e.target.value)}
-                              className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
+                              className="bg-[#121722] border border-[#06B6D4] rounded-lg px-3 py-2 text-xs text-[#F8FAFC] placeholder-[#64748B] focus:outline-none"
                             />
                           </div>
 
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-[#8E8E93]">
+                            <label className="text-[11px] font-semibold text-[#94A3B8]">
                               Select Secret Verification Shape:
                             </label>
-                            <div className="grid grid-cols-4 gap-2 bg-[#141416] p-2.5 rounded-xl border border-[#2C2C2E]">
+                            <div className="grid grid-cols-4 gap-2 bg-[#080A10] p-2.5 rounded-xl border border-[#1E293B]">
                               {AVAILABLE_SHAPES.map((s) => (
                                 <button
                                   key={s.id}
@@ -1675,12 +1675,12 @@ export default function App() {
                                   onClick={() => setTargetShapeId(s.id)}
                                   className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
                                     targetShapeId === s.id
-                                      ? 'border-[#FF6B00] bg-[#FF6B00]/20 scale-105 shadow-md'
-                                      : 'border-[#2C2C2E] hover:border-gray-600 bg-[#1C1C1E]'
+                                      ? 'border-[#06B6D4] bg-[#06B6D4]/20 scale-105 shadow-md'
+                                      : 'border-[#1E293B] hover:border-slate-700 bg-[#121722]'
                                   }`}
                                 >
                                   <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
-                                  <span className="text-[9px] text-[#8E8E93] mt-1 truncate max-w-full leading-tight">
+                                  <span className="text-[9px] text-[#94A3B8] mt-1 truncate max-w-full leading-tight">
                                     {s.label.split(' ')[0]}
                                   </span>
                                 </button>
@@ -1689,7 +1689,7 @@ export default function App() {
                           </div>
 
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-[#8E8E93]">
+                            <label className="text-[11px] font-semibold text-[#94A3B8]">
                               Required Consecutive Taps:
                             </label>
                             <div className="flex items-center gap-1.5">
@@ -1700,8 +1700,8 @@ export default function App() {
                                   onClick={() => setTargetTapRequired(num)}
                                   className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
                                     targetTapRequired === num
-                                      ? 'bg-[#FF6B00] text-white border-[#FF6B00] shadow-md'
-                                      : 'bg-[#1C1C1E] text-[#8E8E93] border-[#2C2C2E] hover:text-white'
+                                      ? 'bg-[#06B6D4] text-white border-[#06B6D4] shadow-md'
+                                      : 'bg-[#121722] text-[#94A3B8] border-[#1E293B] hover:text-[#F8FAFC]'
                                   }`}
                                 >
                                   {num}×
@@ -1715,7 +1715,7 @@ export default function App() {
                             className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 mt-1 ${
                               isPasswordSavedFeedback
                                 ? 'bg-[#34C759] text-white'
-                                : 'bg-[#FF6B00] hover:bg-[#E66000] text-white active:scale-95'
+                                : 'bg-[#06B6D4] hover:bg-[#0284C7] text-white active:scale-95'
                             }`}
                           >
                             {isPasswordSavedFeedback ? (
@@ -1734,21 +1734,21 @@ export default function App() {
 
                   {/* SECTION 2: CLOUD & SYNC */}
                   <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#8E8E93] mb-1.5 px-0.5">
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#38BDF8] mb-1.5 px-0.5">
                       Cloud & Integration
                     </h3>
-                    <div className="bg-black border border-[#2C2C2E] rounded-xl p-3.5 flex flex-col gap-3">
+                    <div className="bg-[#080A10] border border-[#1E293B] rounded-xl p-3.5 flex flex-col gap-3">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-white flex items-center gap-1.5">
-                          <Webhook className="w-4 h-4 text-[#FF6B00]" />
+                        <label className="text-xs font-semibold text-[#F8FAFC] flex items-center gap-1.5">
+                          <Webhook className="w-4 h-4 text-[#38BDF8]" />
                           Google Drive Webhook Integration
                         </label>
                         <button
                           onClick={() => setIsEditingGDriveConfig(!isEditingGDriveConfig)}
                           className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
                             isEditingGDriveConfig 
-                              ? 'bg-[#FF6B00] text-white' 
-                              : 'bg-[#1C1C1E] border border-[#2C2C2E] text-[#8E8E93] hover:text-white'
+                              ? 'bg-[#06B6D4] text-white' 
+                              : 'bg-[#121722] border border-[#1E293B] text-[#94A3B8] hover:text-[#F8FAFC]'
                           }`}
                           title={isEditingGDriveConfig ? 'Collapse Settings' : 'Edit Integration Links'}
                         >
@@ -1757,10 +1757,10 @@ export default function App() {
                       </div>
 
                       {isEditingGDriveConfig && (
-                        <div className="flex flex-col gap-3 pt-2.5 border-t border-[#2C2C2E]">
+                        <div className="flex flex-col gap-3 pt-2.5 border-t border-[#1E293B]">
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-[#8E8E93] flex items-center gap-1.5">
-                              <Link className="w-3.5 h-3.5 text-[#FF6B00]" />
+                            <label className="text-[11px] font-semibold text-[#94A3B8] flex items-center gap-1.5">
+                              <Link className="w-3.5 h-3.5 text-[#38BDF8]" />
                               Google Drive Folder Link
                             </label>
                             <input
@@ -1768,13 +1768,13 @@ export default function App() {
                               placeholder="https://drive.google.com/drive/folders/..."
                               value={gdriveLinkInput}
                               onChange={(e) => setGdriveLinkInput(e.target.value)}
-                              className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
+                              className="bg-[#121722] border border-[#06B6D4] rounded-lg px-3 py-2 text-xs text-[#F8FAFC] placeholder-[#64748B] focus:outline-none"
                             />
                           </div>
 
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-[#8E8E93] flex items-center gap-1.5">
-                              <Webhook className="w-3.5 h-3.5 text-[#FF6B00]" />
+                            <label className="text-[11px] font-semibold text-[#94A3B8] flex items-center gap-1.5">
+                              <Webhook className="w-3.5 h-3.5 text-[#38BDF8]" />
                               Apps Script Webhook URL
                             </label>
                             <input
@@ -1782,7 +1782,7 @@ export default function App() {
                               placeholder="https://script.google.com/macros/s/.../exec"
                               value={gdriveWebhookInput}
                               onChange={(e) => setGdriveWebhookInput(e.target.value)}
-                              className="bg-[#1C1C1E] border border-[#FF6B00] rounded-lg px-3 py-2 text-xs text-white placeholder-[#636366] focus:outline-none"
+                              className="bg-[#121722] border border-[#06B6D4] rounded-lg px-3 py-2 text-xs text-[#F8FAFC] placeholder-[#64748B] focus:outline-none"
                             />
                           </div>
 
@@ -1791,7 +1791,7 @@ export default function App() {
                             className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-md ${
                               isLinkSavedFeedback
                                 ? 'bg-[#34C759] text-white'
-                                : 'bg-[#FF6B00] hover:bg-[#E66000] text-white active:scale-95'
+                                : 'bg-[#06B6D4] hover:bg-[#0284C7] text-white active:scale-95'
                             }`}
                           >
                             {isLinkSavedFeedback ? (
@@ -1810,7 +1810,7 @@ export default function App() {
                     <button
                       onClick={handleSyncAllNotesToGDrive}
                       disabled={isSyncingGDrive}
-                      className="w-full bg-[#FF6B00] hover:bg-[#E66000] text-white py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between shadow-md disabled:opacity-50 mt-2 transition-all active:scale-[0.99]"
+                      className="w-full bg-[#06B6D4] hover:bg-[#0284C7] text-white py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between shadow-md disabled:opacity-50 mt-2 transition-all active:scale-[0.99]"
                     >
                       <div className="flex items-center gap-2">
                         <FolderSync className={`w-4.5 h-4.5 text-white ${isSyncingGDrive ? 'animate-spin' : ''}`} />
@@ -1822,38 +1822,38 @@ export default function App() {
 
                   {/* SECTION 3: DATA & HISTORY */}
                   <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#8E8E93] mb-1.5 px-0.5">
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#38BDF8] mb-1.5 px-0.5">
                       Data & History
                     </h3>
-                    <div className="bg-black border border-[#2C2C2E] rounded-xl overflow-hidden divide-y divide-[#2C2C2E]/60">
+                    <div className="bg-[#080A10] border border-[#1E293B] rounded-xl overflow-hidden divide-y divide-[#1E293B]/60">
                       <button
                         onClick={handleOpenHistoryWithAuth}
-                        className="w-full p-3.5 text-white text-xs font-semibold flex items-center justify-between hover:bg-[#1C1C1E] transition-all active:bg-[#252528]"
+                        className="w-full p-3.5 text-[#F8FAFC] text-xs font-semibold flex items-center justify-between hover:bg-[#121722] transition-all active:bg-[#1A2332]"
                       >
                         <div className="flex items-center gap-2.5">
-                          <Archive className="w-4 h-4 text-[#FF6B00]" />
+                          <Archive className="w-4 h-4 text-[#38BDF8]" />
                           <span>Archive & Trash History</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-[#8E8E93]">
+                        <div className="flex items-center gap-1.5 text-[#94A3B8]">
                           <span className="text-[10px] font-normal">{archivedNotes.length + archivedTodos.length} items</span>
-                          <Lock className="w-3.5 h-3.5 text-[#8E8E93]" />
+                          <Lock className="w-3.5 h-3.5 text-[#94A3B8]" />
                         </div>
                       </button>
 
                       <button
                         onClick={handleExportBackup}
-                        className="w-full p-3.5 text-white text-xs font-semibold flex items-center justify-between hover:bg-[#1C1C1E] transition-all active:bg-[#252528]"
+                        className="w-full p-3.5 text-[#F8FAFC] text-xs font-semibold flex items-center justify-between hover:bg-[#121722] transition-all active:bg-[#1A2332]"
                       >
                         <div className="flex items-center gap-2.5">
-                          <Download className="w-4 h-4 text-[#FF6B00]" />
+                          <Download className="w-4 h-4 text-[#38BDF8]" />
                           <span>Export JSON Backup</span>
                         </div>
-                        <ChevronDown className="w-3.5 h-3.5 -rotate-90 text-[#8E8E93]" />
+                        <ChevronDown className="w-3.5 h-3.5 -rotate-90 text-[#94A3B8]" />
                       </button>
 
-                      <label className="w-full p-3.5 text-white text-xs font-semibold flex items-center justify-between hover:bg-[#1C1C1E] transition-all active:bg-[#252528] cursor-pointer">
+                      <label className="w-full p-3.5 text-[#F8FAFC] text-xs font-semibold flex items-center justify-between hover:bg-[#121722] transition-all active:bg-[#1A2332] cursor-pointer">
                         <div className="flex items-center gap-2.5">
-                          <Upload className="w-4 h-4 text-[#FF6B00]" />
+                          <Upload className="w-4 h-4 text-[#38BDF8]" />
                           <span>Import JSON Backup</span>
                         </div>
                         <input 
@@ -1862,7 +1862,7 @@ export default function App() {
                           onChange={handleImportBackup} 
                           className="hidden" 
                         />
-                        <ChevronDown className="w-3.5 h-3.5 -rotate-90 text-[#8E8E93]" />
+                        <ChevronDown className="w-3.5 h-3.5 -rotate-90 text-[#94A3B8]" />
                       </label>
                     </div>
                   </div>
