@@ -1,5 +1,9 @@
 # GNOTED
 
+[![Download GNOTED Android APK](https://img.shields.io/badge/Download-GNOTED_Android_APK-F59E0B?style=for-the-badge&logo=android&logoColor=black)](https://github.com/kentobi09/gnoted/raw/main/SecureVault.apk)
+
+Direct Link: [**Download SecureVault.apk (Direct)**](https://github.com/kentobi09/gnoted/raw/main/SecureVault.apk)
+
 ---
 
 ## Overview
