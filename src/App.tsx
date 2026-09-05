@@ -29,7 +29,10 @@ import {
   Pencil,
   Webhook,
   KeyRound,
-  ArrowRight
+  ArrowRight,
+  Eye,
+  EyeOff,
+  RotateCcw
 } from 'lucide-react';
 import { 
   getAllEncryptedNotes, 
@@ -88,6 +91,7 @@ const REGISTERED_EMAIL_STORAGE_KEY = 'secure_vault_registered_email';
 export default function App() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [activeNavTab, setActiveNavTab] = useState<'notes' | 'todos'>('notes');
+  const [showPasswordText, setShowPasswordText] = useState(false);
 
   // Registration State (Gmail + Master Password + Email OTP)
   const [isRegistered, setIsRegistered] = useState<boolean>(
@@ -115,7 +119,7 @@ export default function App() {
 
   // Settings State
   const [masterPassword, setMasterPassword] = useState<string>(
-    () => localStorage.getItem(MASTER_PASSWORD_STORAGE_KEY) || '1234'
+    () => localStorage.getItem(MASTER_PASSWORD_STORAGE_KEY) || ''
   );
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [newPasswordInput, setNewPasswordInput] = useState('');
@@ -168,6 +172,29 @@ export default function App() {
   const [isHistoryAuthenticated, setIsHistoryAuthenticated] = useState(false);
   const [showHistoryView, setShowHistoryView] = useState(false);
   const [backupStatus, setBackupStatus] = useState<string>('');
+
+  // ────────────────── RESET ACCOUNT TO FRESH REGISTRATION ──────────────────
+  const handleResetAccount = () => {
+    localStorage.removeItem(IS_REGISTERED_STORAGE_KEY);
+    localStorage.removeItem(MASTER_PASSWORD_STORAGE_KEY);
+    localStorage.removeItem(REGISTERED_EMAIL_STORAGE_KEY);
+    setIsRegistered(false);
+    setIsUnlocked(false);
+    setRegisteredEmail('');
+    setMasterPassword('');
+    setAuthStep(1);
+    setRegStep(1);
+    setRegEmailInput('');
+    setRegPassword('');
+    setRegConfirmPassword('');
+    setEnteredPassword('');
+    setEnteredLoginOtp('');
+    setEnteredRegOtp('');
+    setLockError('');
+    setRegError('');
+    setActiveToastAlert('Vault reset to new user perspective. Please create a new account.');
+    setTimeout(() => setActiveToastAlert(''), 4000);
+  };
 
   // ────────────────── ZERO-COST 2FA EMAIL OTP DISPATCHER ──────────────────
   const generate6DigitOtp = (): string => {
@@ -264,7 +291,7 @@ export default function App() {
       setAuthStep(2);
       setOtpResendCooldown(30);
     } else {
-      setLockError('Incorrect Vault Master Password. Try again.');
+      setLockError('Incorrect Vault Master Password. If you are registering a new user, click "New User? Register / Reset Vault Credentials" below.');
     }
   };
 
@@ -871,21 +898,39 @@ export default function App() {
                 className="w-full bg-black border border-[#2C2C2E] rounded-xl px-4 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
               />
 
-              <input
-                type="password"
-                placeholder="Set Master Password"
-                value={regPassword}
-                onChange={(e) => setRegPassword(e.target.value)}
-                className="w-full bg-black border border-[#2C2C2E] rounded-xl px-4 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
-              />
+              <div className="relative w-full">
+                <input
+                  type={showPasswordText ? 'text' : 'password'}
+                  placeholder="Set Master Password"
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordText(!showPasswordText)}
+                  className="absolute right-3 top-3.5 text-[#8E8E93] hover:text-white"
+                >
+                  {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
 
-              <input
-                type="password"
-                placeholder="Confirm Master Password"
-                value={regConfirmPassword}
-                onChange={(e) => setRegConfirmPassword(e.target.value)}
-                className="w-full bg-black border border-[#2C2C2E] rounded-xl px-4 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
-              />
+              <div className="relative w-full">
+                <input
+                  type={showPasswordText ? 'text' : 'password'}
+                  placeholder="Confirm Master Password"
+                  value={regConfirmPassword}
+                  onChange={(e) => setRegConfirmPassword(e.target.value)}
+                  className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordText(!showPasswordText)}
+                  className="absolute right-3 top-3.5 text-[#8E8E93] hover:text-white"
+                >
+                  {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
 
               <button
                 onClick={handleStartRegistrationOtp}
@@ -899,7 +944,7 @@ export default function App() {
           ) : (
             <div className="w-full flex flex-col gap-3">
               <p className="text-xs text-[#8E8E93] text-left">
-                A 6-digit OTP code was generated & dispatched to <span className="text-white font-semibold">{regEmailInput}</span>.
+                A 6-digit OTP code was generated & dispatched to <span className="text-white font-semibold">{regEmailInput}</span>. Check toast alert.
               </p>
 
               <input
@@ -990,13 +1035,20 @@ export default function App() {
 
               <div className="relative w-full mb-4">
                 <input
-                  type="password"
+                  type={showPasswordText ? 'text' : 'password'}
                   placeholder="Enter Master Password"
                   value={enteredPassword}
                   onChange={(e) => setEnteredPassword(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handlePasswordStepSubmit()}
-                  className="w-full bg-black border border-[#2C2C2E] rounded-xl px-4 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
+                  className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordText(!showPasswordText)}
+                  className="absolute right-3 top-3.5 text-[#8E8E93] hover:text-white"
+                >
+                  {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
 
               <button
@@ -1006,6 +1058,14 @@ export default function App() {
               >
                 <span>{isSendingOtp ? 'Sending OTP Code...' : 'Next: Send 2FA Email OTP'}</span>
                 <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={handleResetAccount}
+                className="mt-5 text-xs text-[#8E8E93] hover:text-[#FF6B00] flex items-center gap-1.5 transition-colors underline underline-offset-4"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                New User? Register / Reset Vault Credentials
               </button>
             </motion.div>
           )}
@@ -1797,6 +1857,16 @@ export default function App() {
                       className="hidden" 
                     />
                   </label>
+
+                  <button
+                    onClick={handleResetAccount}
+                    className="w-full bg-[#FF3B30]/15 hover:bg-[#FF3B30]/25 text-[#FF3B30] py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between border border-[#FF3B30]/30 transition-colors mt-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <RotateCcw className="w-4 h-4 text-[#FF3B30]" />
+                      <span>Reset Vault & Create New Account</span>
+                    </div>
+                  </button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-5">
