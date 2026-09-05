@@ -34,7 +34,8 @@ import {
   EyeOff,
   RotateCcw,
   MailCheck,
-  Key
+  Key,
+  Mail
 } from 'lucide-react';
 import { 
   getAllEncryptedNotes, 
@@ -96,12 +97,20 @@ export default function App() {
   const [showPasswordText, setShowPasswordText] = useState(false);
 
   // Registration State (1: Enter Email ➔ 2: Verify Gmail OTP ➔ 3: Create Vault Password)
-  const [isRegistered, setIsRegistered] = useState<boolean>(
-    () => Boolean(localStorage.getItem(IS_REGISTERED_STORAGE_KEY))
-  );
   const [registeredEmail, setRegisteredEmail] = useState<string>(
     () => localStorage.getItem(REGISTERED_EMAIL_STORAGE_KEY) || ''
   );
+  const [masterPassword, setMasterPassword] = useState<string>(
+    () => localStorage.getItem(MASTER_PASSWORD_STORAGE_KEY) || ''
+  );
+  const [isRegistered, setIsRegistered] = useState<boolean>(
+    () => Boolean(
+      localStorage.getItem(IS_REGISTERED_STORAGE_KEY) === 'true' &&
+      localStorage.getItem(REGISTERED_EMAIL_STORAGE_KEY) &&
+      localStorage.getItem(MASTER_PASSWORD_STORAGE_KEY)
+    )
+  );
+
   const [regEmailInput, setRegEmailInput] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
@@ -110,8 +119,11 @@ export default function App() {
   const [enteredRegOtp, setEnteredRegOtp] = useState('');
   const [regError, setRegError] = useState('');
 
-  // Login / Lock Screen 2FA State (1: Send & Verify Email OTP ➔ 2: Enter Vault Password)
+  // Login / Lock Screen 2FA State (1: Enter Email & Send/Verify OTP ➔ 2: Enter Vault Password)
   const [authStep, setAuthStep] = useState<1 | 2>(1);
+  const [loginEmailInput, setLoginEmailInput] = useState<string>(
+    () => localStorage.getItem(REGISTERED_EMAIL_STORAGE_KEY) || ''
+  );
   const [enteredPassword, setEnteredPassword] = useState('');
   const [loginOtp, setLoginOtp] = useState('');
   const [enteredLoginOtp, setEnteredLoginOtp] = useState('');
@@ -120,9 +132,6 @@ export default function App() {
   const [otpResendCooldown, setOtpResendCooldown] = useState(0);
 
   // Settings State
-  const [masterPassword, setMasterPassword] = useState<string>(
-    () => localStorage.getItem(MASTER_PASSWORD_STORAGE_KEY) || ''
-  );
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [newPasswordInput, setNewPasswordInput] = useState('');
   const [newEmailInput, setNewEmailInput] = useState('');
@@ -174,6 +183,13 @@ export default function App() {
   const [isHistoryAuthenticated, setIsHistoryAuthenticated] = useState(false);
   const [showHistoryView, setShowHistoryView] = useState(false);
   const [backupStatus, setBackupStatus] = useState<string>('');
+
+  // Update login email input when registered email changes
+  useEffect(() => {
+    if (registeredEmail) {
+      setLoginEmailInput(registeredEmail);
+    }
+  }, [registeredEmail]);
 
   // ────────────────── ZERO-COST 2FA EMAIL OTP DISPATCHER ──────────────────
   const generate6DigitOtp = (): string => {
@@ -266,6 +282,7 @@ export default function App() {
     localStorage.setItem(IS_REGISTERED_STORAGE_KEY, 'true');
 
     setRegisteredEmail(regEmailInput.trim());
+    setLoginEmailInput(regEmailInput.trim());
     setMasterPassword(regPassword.trim());
     setIsRegistered(true);
 
@@ -273,16 +290,22 @@ export default function App() {
     setIsUnlocked(false);
     setAuthStep(1);
     setLockError('');
-    setActiveToastAlert('Account created successfully! Please verify your email OTP to log in.');
+    setActiveToastAlert('Account created successfully! Send and verify your Email OTP to log in.');
   };
 
   // ────────────────── LOGIN / VERIFICATION HANDLERS ──────────────────
-  // Dispatch Login OTP on initial login screen render
+  // Dispatch Login OTP
   const handleSendLoginOtp = async () => {
-    if (isSendingOtp) return;
+    setLockError('');
+    const targetEmail = loginEmailInput.trim() || registeredEmail.trim();
+    if (!targetEmail || !targetEmail.includes('@')) {
+      setLockError('Please enter a valid Gmail / Email address.');
+      return;
+    }
+
     const otp = generate6DigitOtp();
     setLoginOtp(otp);
-    await dispatchOtpCode(registeredEmail || 'user@gmail.com', otp);
+    await dispatchOtpCode(targetEmail, otp);
     setOtpResendCooldown(30);
   };
 
@@ -293,7 +316,7 @@ export default function App() {
       setAuthStep(2); // OTP Verified ➔ Move to Vault Password step
       setEnteredLoginOtp('');
     } else if (!loginOtp) {
-      setLockError('Please click "Send 6-Digit OTP" first.');
+      setLockError('Please click "Send OTP" first.');
     } else {
       setLockError('Invalid 6-digit OTP code. Please check your notification and try again.');
     }
@@ -310,11 +333,6 @@ export default function App() {
     } else {
       setLockError('Incorrect Vault Password. Please try again.');
     }
-  };
-
-  const handleResendLoginOtp = async () => {
-    if (otpResendCooldown > 0) return;
-    await handleSendLoginOtp();
   };
 
   useEffect(() => {
@@ -362,6 +380,7 @@ export default function App() {
     if (newEmailInput.trim() && newEmailInput.includes('@')) {
       localStorage.setItem(REGISTERED_EMAIL_STORAGE_KEY, newEmailInput.trim());
       setRegisteredEmail(newEmailInput.trim());
+      setLoginEmailInput(newEmailInput.trim());
     }
 
     setNewPasswordInput('');
@@ -383,6 +402,7 @@ export default function App() {
     setIsRegistered(false);
     setIsUnlocked(false);
     setRegisteredEmail('');
+    setLoginEmailInput('');
     setMasterPassword('');
     setAuthStep(1);
     setRegStep(1);
@@ -937,14 +957,17 @@ export default function App() {
                 Enter your Gmail address to receive a 6-digit verification code.
               </p>
 
-              <input
-                type="email"
-                placeholder="Enter Email / Gmail address"
-                value={regEmailInput}
-                onChange={(e) => setRegEmailInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleStartRegistrationEmailOtp()}
-                className="w-full bg-black border border-[#2C2C2E] rounded-xl px-4 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
-              />
+              <div className="relative w-full">
+                <Mail className="w-4 h-4 text-[#8E8E93] absolute left-3.5 top-3.5" />
+                <input
+                  type="email"
+                  placeholder="Enter Email / Gmail address"
+                  value={regEmailInput}
+                  onChange={(e) => setRegEmailInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleStartRegistrationEmailOtp()}
+                  className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
+                />
+              </div>
 
               <button
                 onClick={handleStartRegistrationEmailOtp}
@@ -1108,7 +1131,7 @@ export default function App() {
             </div>
           )}
 
-          {/* STEP 1: VERIFY LOGIN EMAIL OTP */}
+          {/* STEP 1: ENTER GMAIL & VERIFY LOGIN EMAIL OTP */}
           {authStep === 1 && (
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full flex flex-col items-center">
               <div className="w-14 h-14 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-4 border border-[#FF6B00]/30">
@@ -1117,8 +1140,23 @@ export default function App() {
 
               <h1 className="text-lg font-bold mb-1 tracking-tight text-white">Step 1 of 2: Email OTP</h1>
               <p className="text-xs text-[#8E8E93] leading-relaxed mb-4">
-                Verify identity via OTP sent to <span className="text-white font-semibold">{registeredEmail || 'your email'}</span>.
+                Enter your registered Gmail to receive a 6-digit verification code.
               </p>
+
+              {/* GMAIL FIELD ON LOGIN SCREEN */}
+              <div className="w-full mb-3 text-left">
+                <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">Registered Email / Gmail:</label>
+                <div className="relative w-full">
+                  <Mail className="w-4 h-4 text-[#8E8E93] absolute left-3.5 top-3.5" />
+                  <input
+                    type="email"
+                    placeholder="Enter Email / Gmail address"
+                    value={loginEmailInput}
+                    onChange={(e) => setLoginEmailInput(e.target.value)}
+                    className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
+                  />
+                </div>
+              </div>
 
               <div className="flex items-center gap-2 w-full mb-4">
                 <input
@@ -1134,10 +1172,10 @@ export default function App() {
                 <button
                   onClick={handleSendLoginOtp}
                   disabled={isSendingOtp || otpResendCooldown > 0}
-                  className="bg-[#2C2C2E] hover:bg-[#3A3A3C] text-xs text-white px-3 py-3 rounded-xl border border-[#3A3A3C] shrink-0 disabled:opacity-50"
-                  title="Send or Resend OTP"
+                  className="bg-[#FF6B00] hover:bg-[#E66000] text-xs font-semibold text-white px-3.5 py-3 rounded-xl border border-[#FF6B00] shrink-0 disabled:opacity-50 transition-all"
+                  title="Send 6-Digit OTP Code"
                 >
-                  {otpResendCooldown > 0 ? `${otpResendCooldown}s` : 'Send OTP'}
+                  {isSendingOtp ? 'Sending...' : otpResendCooldown > 0 ? `${otpResendCooldown}s` : 'Send OTP'}
                 </button>
               </div>
 
@@ -1147,6 +1185,13 @@ export default function App() {
               >
                 <span>Verify OTP Code</span>
                 <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={handleResetAccount}
+                className="text-[11px] text-[#8E8E93] hover:text-[#FF6B00] mt-4 transition-colors"
+              >
+                Reset App Storage / Re-Register Account
               </button>
             </motion.div>
           )}
