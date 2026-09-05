@@ -880,22 +880,22 @@ export default function App() {
   // ────────────────── REGISTRATION PROCESS (PASSWORD-ONLY) ──────────────────
   if (!isRegistered) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+      <div className="min-h-screen bg-[#0A0B0E] text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
         {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
         <ToastNotificationBanner 
           message={activeToastAlert} 
           onClose={() => setActiveToastAlert('')} 
         />
 
-        <div className="w-full max-w-sm bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
-          <div className="w-14 h-14 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-6 border border-[#FF6B00]/30">
-            <ShieldCheck className="w-8 h-8 stroke-[2]" />
+        <div className="w-full max-w-sm bg-[#14151B] border border-white/[0.08] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
+          <div className="w-13 h-13 rounded-2xl bg-[#FF6B00]/10 flex items-center justify-center text-[#FF6B00] mb-5 border border-[#FF6B00]/20">
+            <ShieldCheck className="w-7 h-7 stroke-[2]" />
           </div>
 
-          <h1 className="text-2xl font-black mb-6 tracking-wider text-white uppercase">GNOTED</h1>
+          <h1 className="text-xl font-bold mb-6 tracking-widest text-white uppercase">GNOTED</h1>
 
           {regError && (
-            <div className="bg-[#FF3B30]/15 border border-[#FF3B30]/30 rounded-xl p-2.5 mb-4 text-xs text-[#FF3B30] w-full text-left">
+            <div className="bg-[#FF3B30]/10 border border-[#FF3B30]/25 rounded-xl p-2.5 mb-4 text-xs text-[#FF3B30] w-full text-left">
               {regError}
             </div>
           )}
@@ -907,12 +907,12 @@ export default function App() {
                 placeholder="Passcode"
                 value={regPassword}
                 onChange={(e) => setRegPassword(e.target.value)}
-                className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
+                className="w-full bg-[#0A0B0E] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#6B7280] focus:outline-none focus:border-[#FF6B00]"
               />
               <button
                 type="button"
                 onClick={() => setShowPasswordText(!showPasswordText)}
-                className="absolute right-3 top-3.5 text-[#8E8E93] hover:text-white"
+                className="absolute right-3 top-3.5 text-[#9CA3AF] hover:text-white"
               >
                 {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -925,22 +925,22 @@ export default function App() {
                 value={regConfirmPassword}
                 onChange={(e) => setRegConfirmPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateVaultPassword()}
-                className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
+                className="w-full bg-[#0A0B0E] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#6B7280] focus:outline-none focus:border-[#FF6B00]"
               />
               <button
                 type="button"
                 onClick={() => setShowPasswordText(!showPasswordText)}
-                className="absolute right-3 top-3.5 text-[#8E8E93] hover:text-white"
+                className="absolute right-3 top-3.5 text-[#9CA3AF] hover:text-white"
               >
                 {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
 
             <div className="w-full text-left mt-1">
-              <label className="text-xs font-semibold text-[#8E8E93] block mb-1.5">
+              <label className="text-xs font-medium text-[#9CA3AF] block mb-1.5">
                 Secret Verification Shape:
               </label>
-              <div className="grid grid-cols-4 gap-2 bg-black/60 p-2.5 rounded-xl border border-[#2C2C2E]">
+              <div className="grid grid-cols-4 gap-2 bg-[#0A0B0E] p-2.5 rounded-xl border border-white/10">
                 {AVAILABLE_SHAPES.map((s) => (
                   <button
                     key={s.id}
@@ -948,12 +948,12 @@ export default function App() {
                     onClick={() => setRegSelectedShape(s.id)}
                     className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${
                       regSelectedShape === s.id
-                        ? 'border-[#FF6B00] bg-[#FF6B00]/20 scale-105 shadow-md'
-                        : 'border-[#2C2C2E] hover:border-gray-600 bg-[#1C1C1E]'
+                        ? 'border-[#FF6B00] bg-[#FF6B00]/15 scale-105 shadow-md'
+                        : 'border-white/5 hover:border-white/20 bg-[#14151B]'
                     }`}
                   >
                     <ShapeIcon shape={s.shape} color={s.color} className="w-6 h-6" />
-                    <span className="text-[9px] text-[#8E8E93] mt-1 truncate max-w-full leading-tight">
+                    <span className="text-[9px] text-[#9CA3AF] mt-1 truncate max-w-full leading-tight">
                       {s.label.split(' ')[0]}
                     </span>
                   </button>
@@ -962,7 +962,7 @@ export default function App() {
             </div>
 
             <div className="w-full text-left">
-              <label className="text-xs font-semibold text-[#8E8E93] block mb-1.5">
+              <label className="text-xs font-medium text-[#9CA3AF] block mb-1.5">
                 Required Consecutive Taps:
               </label>
               <div className="flex items-center gap-1.5">
@@ -974,7 +974,7 @@ export default function App() {
                     className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
                       regSelectedTaps === num
                         ? 'bg-[#FF6B00] text-white border-[#FF6B00] shadow-md'
-                        : 'bg-black text-[#8E8E93] border-[#2C2C2E] hover:text-white'
+                        : 'bg-[#0A0B0E] text-[#9CA3AF] border-white/10 hover:text-white'
                     }`}
                   >
                     {num}×
@@ -985,7 +985,7 @@ export default function App() {
 
             <button
               onClick={handleCreateVaultPassword}
-              className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm mt-2"
+              className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-medium py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm mt-2"
             >
               <Key className="w-4 h-4" />
               Create Account & Enter GNOTED
@@ -1014,7 +1014,7 @@ export default function App() {
     ];
 
     return (
-      <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-[#090a0f] via-[#040407] to-[#000000] overflow-hidden select-none z-50 font-sans">
+      <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-[#0B0C10] via-[#07080B] to-[#040406] overflow-hidden select-none z-50 font-sans">
         {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
         <ToastNotificationBanner 
           message={activeToastAlert} 
@@ -1054,22 +1054,22 @@ export default function App() {
   // ────────────────── LOCK SCREEN (PASSWORD-ONLY RETURNING USER) ──────────────────
   if (!isUnlocked && !isPasswordPassed) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+      <div className="min-h-screen bg-[#0A0B0E] text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
         {/* DISMISSABLE SWIPEABLE TOAST NOTIFICATION BANNER */}
         <ToastNotificationBanner 
           message={activeToastAlert} 
           onClose={() => setActiveToastAlert('')} 
         />
 
-        <div className="w-full max-w-sm bg-[#1C1C1E] border border-[#2C2C2E] rounded-card p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
-          <div className="w-14 h-14 rounded-full bg-[#FF6B00]/15 flex items-center justify-center text-[#FF6B00] mb-6 border border-[#FF6B00]/30">
-            <Lock className="w-7 h-7 stroke-[2]" />
+        <div className="w-full max-w-sm bg-[#14151B] border border-white/[0.08] rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl relative z-10">
+          <div className="w-13 h-13 rounded-2xl bg-[#FF6B00]/10 flex items-center justify-center text-[#FF6B00] mb-5 border border-[#FF6B00]/20">
+            <Lock className="w-6 h-6 stroke-[2]" />
           </div>
 
-          <h1 className="text-2xl font-black mb-6 tracking-wider text-white uppercase">GNOTED</h1>
+          <h1 className="text-xl font-bold mb-6 tracking-widest text-white uppercase">GNOTED</h1>
 
           {lockError && (
-            <div className="bg-[#FF3B30]/15 border border-[#FF3B30]/30 rounded-xl p-2.5 mb-4 text-xs text-[#FF3B30] w-full text-left">
+            <div className="bg-[#FF3B30]/10 border border-[#FF3B30]/25 rounded-xl p-2.5 mb-4 text-xs text-[#FF3B30] w-full text-left">
               {lockError}
             </div>
           )}
@@ -1081,12 +1081,12 @@ export default function App() {
               value={enteredPassword}
               onChange={(e) => setEnteredPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLoginPasswordStepSubmit()}
-              className="w-full bg-black border border-[#2C2C2E] rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-[#FF6B00]"
+              className="w-full bg-[#0A0B0E] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-[#6B7280] focus:outline-none focus:border-[#FF6B00]"
             />
             <button
               type="button"
               onClick={() => setShowPasswordText(!showPasswordText)}
-              className="absolute right-3 top-3.5 text-[#8E8E93] hover:text-white"
+              className="absolute right-3 top-3.5 text-[#9CA3AF] hover:text-white"
             >
               {showPasswordText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -1094,10 +1094,10 @@ export default function App() {
 
           <button
             onClick={handleLoginPasswordStepSubmit}
-            className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-semibold py-3.5 rounded-pill shadow-md flex items-center justify-center gap-2 text-sm"
+            className="w-full bg-[#FF6B00] hover:bg-[#E66000] active:scale-[0.98] transition-all text-white font-medium py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm"
           >
             <Unlock className="w-4 h-4" />
-            Unlock GNOTED
+            Unlock
           </button>
         </div>
       </div>
