@@ -278,12 +278,9 @@ export default function App() {
         setIsUnlocked(true);
         setIsPasswordPassed(false);
         setShapeTapCount(0);
-        setActiveToastAlert('Access Granted! Welcome to SecureVault.');
       }
     } else {
       setShapeTapCount(0);
-      setIsShapeShaking(true);
-      setTimeout(() => setIsShapeShaking(false), 400);
     }
   };
 
@@ -1009,11 +1006,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* ASYMMETRICAL WALLPAPER SHAPES */}
-        <motion.div 
-          animate={isShapeShaking ? { x: [-12, 12, -12, 12, 0] } : {}}
-          transition={{ duration: 0.35 }}
-          className="relative w-full h-full max-w-md mx-auto"
-        >
+        <div className="relative w-full h-full max-w-md mx-auto">
           {wallpaperShapes.map((item) => (
             <motion.button
               key={item.id}
@@ -1033,7 +1026,7 @@ export default function App() {
               <ShapeIcon shape={item.shape} color={item.color} className="w-full h-full filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]" />
             </motion.button>
           ))}
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -1108,13 +1101,6 @@ export default function App() {
           >
             <Unlock className="w-4 h-4" />
             Unlock & Enter Vault
-          </button>
-
-          <button
-            onClick={handleResetAccount}
-            className="text-[11px] text-[#8E8E93] hover:text-[#FF6B00] mt-5 transition-colors"
-          >
-            Reset App Storage / Re-Register Account
           </button>
         </div>
       </div>
@@ -1915,16 +1901,6 @@ export default function App() {
                       className="hidden" 
                     />
                   </label>
-
-                  <button
-                    onClick={handleResetAccount}
-                    className="w-full bg-[#FF3B30]/15 hover:bg-[#FF3B30]/25 text-[#FF3B30] py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between border border-[#FF3B30]/30 transition-colors mt-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <RotateCcw className="w-4 h-4 text-[#FF3B30]" />
-                      <span>Reset Vault & Create New Account</span>
-                    </div>
-                  </button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-5">
