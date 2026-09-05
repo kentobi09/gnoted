@@ -1,108 +1,148 @@
-# 🔐 SecureVault PWA
+# 🔐 GNOTED
 
-> **A Privacy-First, Zero-Knowledge Encrypted Vault & Task Manager featuring 2-Factor Email OTP Authentication, Client-Side AES-GCM Encryption, Scheduled Task Notifications, and Automated Google Drive Webhook Backups.**
+> **A Privacy-First, Zero-Knowledge Encrypted Vault & Task Manager featuring Custom Secret Shape Verification, Client-Side AES-GCM Encryption, Task Deadline Reminders, and Direct Google Drive Webhook Automated Sync.**
 
-![License](https://img.shields.io/badge/License-MIT-orange.svg)
+![License](https://img.shields.io/badge/License-MIT-amber.svg)
 ![React](https://img.shields.io/badge/React-18.3-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue.svg)
 ![Vite](https://img.shields.io/badge/Vite-6.0-purple.svg)
 ![PWA](https://img.shields.io/badge/PWA-Ready-green.svg)
-![Security](https://img.shields.io/badge/Security-AES--GCM--256-red.svg)
+![Security](https://img.shields.io/badge/Security-AES--GCM--256-amber.svg)
 
 ---
 
 ## 🌟 Overview
 
-**SecureVault PWA** is a high-security, web-native Progressive Web Application designed for storing confidential notes, passwords, private keys, and scheduled tasks. All data is encrypted locally using the **Web Crypto API (AES-GCM 256-bit)** before persistent storage in IndexedDB. 
+**GNOTED** is a high-contrast, security-focused Progressive Web Application (PWA) designed for storing confidential notes, passwords, private keys, and scheduled tasks. 
 
-Authentication is protected by a deterministic, **$0.00 zero-cost 2-Factor Authentication (2FA Email OTP + Master Passcode)** flow with optional Google Drive Webhook dispatches.
+All sensitive data is encrypted locally using the **Web Crypto API (AES-GCM 256-bit)** before persistent storage in IndexedDB. Authentication uses a 2-step verification system: passcode unlock followed by a stealth secret shape wallpaper challenge where the secret shape must be tapped a set consecutive number of times.
 
 ---
 
 ## ✨ Key Features
 
-- 🔐 **2-Factor Email OTP Authentication**: Dual-factor security combining your Master Passcode and a 6-digit dynamically generated OTP code sent via browser notifications & optional Webhooks.
-- 🛡️ **Zero-Knowledge AES-GCM Encryption**: All note titles, contents, and task items are encrypted on the client side using Web Crypto API. Unencrypted data never leaves your browser.
-- 📋 **Encrypted Notes & Sensitive Masking**: Organize notes into custom tags (`Personal`, `Passwords`, `Private Keys`) with one-click sensitive text masking.
-- ⏱️ **Scheduled To-Do Deadlines & Alerts**: Set due dates and priorities (`Urgent`, `Important`, `Neutral`, `Someday`) with automatic background notifications.
-- ☁️ **Direct Google Drive Webhook Sync**: Backup encrypted vault payloads straight to your personal Google Drive folder using Google Apps Script webhooks.
-- 📦 **Offline-First PWA Support**: Fully operational offline powered by Vite PWA service workers and IndexedDB storage.
-- 🔒 **Auto-Lock Security**: Automatic session lock whenever tab focus changes or window visibility is lost.
-- 📁 **JSON Export & Import**: Easy local encrypted data backup and migration across devices.
+- 🛡️ **Zero-Knowledge AES-GCM Encryption**: All note titles, contents, and task items are encrypted on the client side using Web Crypto API.
+- 🎨 **High Contrast Amber Theme**: Pitch black backdrop (`#08080A`), dark charcoal card containers (`#111216`), crisp white text (`#FFFFFF`), and vivid Amber Yellow accents (`#F59E0B`).
+- 🔷 **Secret Shape Verification Challenge**: Custom verification gate requiring sequential taps on your secret shape.
+- 📋 **Auto-Sensitive Categories**: `Passwords` and `Private Keys` categories automatically mask content for extra privacy.
+- ⏱️ **Task Deadline Reminders**: Priority tasks (`Urgent`, `Important`, `Neutral`, `Someday`) with customizable due dates and browser notifications.
+- ☁️ **Automated Google Drive Webhook Integration**: Directly sync encrypted JSON note backups to your personal Google Drive folder using a zero-cost Google Apps Script Webhook.
+- 📦 **Offline-First PWA**: Fully functional offline powered by Service Workers and IndexedDB storage.
+- 📁 **Encrypted Backup Export & Import**: Easy local encrypted data backup and restoration.
 
 ---
 
-## 🔒 Security Architecture
+## 🌐 Google Drive Webhook Setup Guide
+
+### Why is a Webhook Needed?
+
+Google Drive API usually requires complex server backends, OAuth2 authentication screens, and client secrets. 
+
+By using a **Google Apps Script Webhook**:
+1. **$0.00 Cost**: Free for all personal `@gmail.com` accounts.
+2. **Zero Middleman**: Webhook requests travel directly from your browser to your personal Google Drive space via Google's infrastructure.
+3. **No OAuth Complexity**: You deploy the script under your own Google account, granting it permission to write directly to your Drive folder.
+
+---
+
+### Step-by-Step Webhook Creation
+
+#### Step 1: Open Google Apps Script
+Go to [script.google.com](https://script.google.com) and log in with your Google account. Click **New Project**.
+
+#### Step 2: Paste the Apps Script Code
+Replace all default code in `Code.gs` with the following snippet:
+
+```javascript
+function doPost(e) {
+  try {
+    var contents = e.postData.contents;
+    var data = JSON.parse(contents);
+    
+    var filename = data.filename || ("gnoted_backup_" + new Date().getTime() + ".json");
+    var payloadStr = data.payload || "";
+    var targetFolderId = data.folderId || "";
+    
+    var folder;
+    if (targetFolderId && targetFolderId.trim().length > 5) {
+      try {
+        folder = DriveApp.getFolderById(targetFolderId.trim());
+      } catch (err) {
+        folder = DriveApp.getRootFolder();
+      }
+    } else {
+      folder = DriveApp.getRootFolder();
+    }
+    
+    // Create the file in the designated Google Drive folder
+    var file = folder.createFile(filename, payloadStr, MimeType.PLAIN_TEXT);
+    
+    return ContentService
+      .createTextOutput(JSON.stringify({ result: "success", fileId: file.getId(), url: file.getUrl() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ result: "error", message: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+```
+
+#### Step 3: Deploy as a Web App
+1. Click **Deploy** ➔ **New Deployment** (top right).
+2. Click the gear icon next to **Select type** and select **Web app**.
+3. Fill in the fields:
+   - **Description**: `GNOTED Webhook Sync`
+   - **Execute as**: `Me (your-email@gmail.com)`
+   - **Who has access**: `Anyone` *(Crucial for browser CORS requests to reach the script without login tokens)*.
+4. Click **Deploy**.
+5. Grant permissions when prompted (*Click "Advanced" ➔ "Go to GNOTED Webhook Sync (unsafe)" ➔ Allow*).
+
+#### Step 4: Copy & Paste Webhook URL into GNOTED
+1. Copy the resulting **Web App URL** (looks like `https://script.google.com/macros/s/.../exec`).
+2. Open GNOTED ➔ Click **Settings** ➔ **Cloud & Integration**.
+3. Paste the URL into **Apps Script Webhook URL** and click **Save Changes**.
+4. *(Optional)* Paste your target Google Drive folder link into **Google Drive Folder Link** to save backups inside a specific folder instead of root Drive.
+5. Tap **Sync ALL Notes to Google Drive** or the sync icon on the home header!
+
+---
+
+## 🔒 Security & Encryption Architecture
 
 ```mermaid
 graph TD
-  A[User Registration / Login] -->|Master Passcode| B[Client-Side Key Derivation]
-  A -->|Gmail Entry| C[Generate 6-Digit OTP]
-  C -->|Toast Alert & Webhook| D[2FA Verification Step]
-  B & D -->|Grant Session| E[Master Symmetric Key]
-  E -->|Web Crypto API AES-GCM-256| F[IndexedDB Local Storage]
-  E -->|Encrypted Payload| G[Google Drive Webhook]
+  A[User Registration / Login] -->|Master Passcode| B[Key Derivation]
+  A -->|Secret Verification Shape & Taps| C[Stealth Wall Challenge]
+  B & C -->|Pass Session Gate| D[Master Crypto Key]
+  D -->|Web Crypto API AES-GCM-256| E[IndexedDB Local Storage]
+  D -->|Direct JSON Payload| F[Google Drive Webhook]
 ```
 
-### Encryption Protocol
-- **Algorithm**: `AES-GCM` with a 256-bit key length.
-- **Key Derivation**: `PBKDF2` with `SHA-256` hashing and unique IVs for every record.
-- **Data At Rest**: IndexedDB (`secure_vault_db`) stores only base64 ciphertext and IVs.
+### Encryption Technical Specs
+- **Algorithm**: `AES-GCM` 256-bit symmetric key encryption.
+- **IV Generation**: Unique 12-byte cryptographically secure random IV for every note & task.
+- **Data At Rest**: IndexedDB (`secure_vault_notes_db`) stores only base64 ciphertext and IVs.
 
 ---
 
-## 🚀 Quickstart & Local Setup
-
-### Prerequisites
-- **Node.js** (v18.0.0 or higher)
-- **npm** or **yarn**
+## 🚀 Development & Build
 
 ### Installation
+```bash
+git clone https://github.com/kentobi09/gnoted.git
+cd secure-vault-pwa
+npm install
+```
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/kentobi09/gnoted.git
-   cd secure-vault-pwa
-   ```
+### Start Dev Server
+```bash
+npm run dev
+```
 
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Configure Real Email Delivery (Optional)**:
-   Create a `.env` file based on `.env.example`:
-   ```env
-   PORT=3001
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=465
-   SMTP_SECURE=true
-   SMTP_USER=your-email@gmail.com
-   SMTP_PASS=your-gmail-app-password
-   ```
-   *Note: If no SMTP credentials are set, the backend will default to Ethereal Test Mailer and log direct preview links.*
-
-4. **Start Development Server (Frontend + Express Backend)**:
-   ```bash
-   npm run dev
-   ```
-   Open your browser at `http://localhost:5173`. Express backend runs on `http://localhost:3001`.
-
-5. **Build Production Bundle**:
-   ```bash
-   npm run build
-   ```
-
----
-
-## ⚙️ Google Drive Webhook Integration Setup (Optional)
-
-To enable 1-click cloud sync to your own Google Drive:
-
-1. Open [Google Apps Script](https://script.google.com/).
-2. Paste the provided Webhook Handler script to receive JSON payloads and save them to a specified folder.
-3. Deploy as Web App (`Execute as: Me`, `Who has access: Anyone`).
-4. Paste the Webhook URL into SecureVault **Settings ➔ Google Drive Webhook Integration**.
+### Build Production Bundle
+```bash
+npm run build
+```
 
 ---
 

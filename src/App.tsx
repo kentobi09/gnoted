@@ -910,6 +910,26 @@ export default function App() {
                     {num}×
                   </button>
                 ))}
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    min="1"
+                    max="99"
+                    placeholder="Custom"
+                    value={![3, 4, 5, 6, 7].includes(regSelectedTaps) ? regSelectedTaps : ''}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (!isNaN(val) && val > 0) {
+                        setRegSelectedTaps(val);
+                      }
+                    }}
+                    className={`w-full py-2 px-1 rounded-xl text-xs font-bold text-center border bg-[#08080A] focus:outline-none transition-all ${
+                      ![3, 4, 5, 6, 7].includes(regSelectedTaps)
+                        ? 'bg-[#F59E0B]/20 text-[#F59E0B] border-[#F59E0B] shadow-md'
+                        : 'text-zinc-400 border-[#27272A] focus:border-[#F59E0B] focus:text-white'
+                    }`}
+                  />
+                </div>
               </div>
             </div>
 
@@ -1568,11 +1588,11 @@ export default function App() {
 
                           <div className="flex flex-col gap-1.5">
                             <label className="text-[11px] font-semibold text-zinc-400">
-                              Update Passcode (Optional):
+                              Update Passcode:
                             </label>
                             <input
                               type="password"
-                              placeholder="New passcode (optional)"
+                              placeholder="New passcode"
                               value={newPasswordInput}
                               onChange={(e) => setNewPasswordInput(e.target.value)}
                               className="bg-[#111216] border border-[#F59E0B] rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none"
@@ -1623,6 +1643,26 @@ export default function App() {
                                   {num}×
                                 </button>
                               ))}
+                              <div className="relative flex-1">
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="99"
+                                  placeholder="Custom"
+                                  value={![3, 4, 5, 6, 7].includes(targetTapRequired) ? targetTapRequired : ''}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10);
+                                    if (!isNaN(val) && val > 0) {
+                                      setTargetTapRequired(val);
+                                    }
+                                  }}
+                                  className={`w-full py-2 px-1 rounded-xl text-xs font-bold text-center border bg-[#111216] focus:outline-none transition-all ${
+                                    ![3, 4, 5, 6, 7].includes(targetTapRequired)
+                                      ? 'bg-[#F59E0B]/20 text-[#F59E0B] border-[#F59E0B] shadow-md'
+                                      : 'text-zinc-400 border-[#27272A] focus:border-[#F59E0B] focus:text-white'
+                                  }`}
+                                />
+                              </div>
                             </div>
                           </div>
 
