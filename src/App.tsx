@@ -305,7 +305,7 @@ export default function App() {
   const [shapeRotations, setShapeRotations] = useState<Record<string, number>>({});
 
   // Settings State
-  const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [isEditingPassword, setIsEditingPassword] = useState(true);
   const [newPasswordInput, setNewPasswordInput] = useState('');
   const [passwordChangeStatus, setPasswordChangeStatus] = useState('');
   const [isPasswordSavedFeedback, setIsPasswordSavedFeedback] = useState(false);
