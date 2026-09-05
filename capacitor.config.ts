@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.securevault.app',
-  appName: 'Secure Vault',
+  appId: 'com.gnoted.app',
+  appName: 'GNOTED',
   webDir: 'dist'
 };
 

@@ -1,8 +1,8 @@
 # GNOTED
 
-[![Download GNOTED Android APK](https://img.shields.io/badge/Download-GNOTED_Android_APK-F59E0B?style=for-the-badge&logo=android&logoColor=black)](https://github.com/kentobi09/gnoted/raw/main/SecureVault.apk)
+[![Download GNOTED Android APK](https://img.shields.io/badge/Download-GNOTED_Android_APK-F59E0B?style=for-the-badge&logo=android&logoColor=black)](https://github.com/kentobi09/gnoted/raw/main/GNOTED.apk)
 
-Direct Link: [**Download SecureVault.apk (Direct)**](https://github.com/kentobi09/gnoted/raw/main/SecureVault.apk)
+Direct Link: [**Download GNOTED.apk (Direct)**](https://github.com/kentobi09/gnoted/raw/main/GNOTED.apk)
 
 ---
 
@@ -17,7 +17,7 @@ All data is encrypted client-side using **AES-GCM 256-bit encryption** before be
 ## Key Features
 
 - **Zero-Knowledge Client-Side Encryption**: Note titles, contents, and tasks are encrypted locally using the Web Crypto API (AES-GCM 256-bit).
-- **Google Drive Webhook Automated Sync**: Directly sync encrypted JSON note backups to your personal Google Drive folder using a zero-cost Google Apps Script Webhook.
+- **Google Drive Webhook Automated Sync**: Directly sync encrypted JSON note backups and APK files to your personal Google Drive folder using a zero-cost Google Apps Script Webhook.
 - **Secret Shape Pattern Gate**: Customizable verification challenge requiring sequential taps on your secret shape.
 - **Auto-Sensitive Masking**: Passwords and Private Keys categories automatically mask content for privacy.
 - **Task Deadline Reminders**: Organize tasks with priority levels (Urgent, Important, Neutral, Someday) and due date notification alerts.
@@ -45,7 +45,7 @@ By using a **Google Apps Script Webhook**:
 Go to [script.google.com](https://script.google.com) and log in with your Google account. Click **New Project**.
 
 #### Step 2: Paste the Apps Script Code
-Replace all default code in `Code.gs` with the following snippet:
+Replace all default code in `Code.gs` with the following snippet (also available in `google_apps_script.js`):
 
 ```javascript
 function doPost(e) {
@@ -56,6 +56,7 @@ function doPost(e) {
     var filename = data.filename || ("gnoted_backup_" + new Date().getTime() + ".json");
     var payloadStr = data.payload || "";
     var targetFolderId = data.folderId || "";
+    var isBase64 = data.isBase64 || false;
     
     var folder;
     if (targetFolderId && targetFolderId.trim().length > 5) {
@@ -68,14 +69,29 @@ function doPost(e) {
       folder = DriveApp.getRootFolder();
     }
     
-    var file = folder.createFile(filename, payloadStr, MimeType.PLAIN_TEXT);
+    var file;
+    if (isBase64) {
+      var decodedBytes = Utilities.base64Decode(payloadStr);
+      var blob = Utilities.newBlob(decodedBytes, "application/vnd.android.package-archive", filename);
+      file = folder.createFile(blob);
+    } else {
+      file = folder.createFile(filename, payloadStr, MimeType.PLAIN_TEXT);
+    }
     
     return ContentService
-      .createTextOutput(JSON.stringify({ result: "success", fileId: file.getId(), url: file.getUrl() }))
+      .createTextOutput(JSON.stringify({ 
+        result: "success", 
+        fileId: file.getId(), 
+        filename: filename, 
+        url: file.getUrl() 
+      }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
     return ContentService
-      .createTextOutput(JSON.stringify({ result: "error", message: error.toString() }))
+      .createTextOutput(JSON.stringify({ 
+        result: "error", 
+        message: error.toString() 
+      }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
@@ -91,12 +107,12 @@ function doPost(e) {
 4. Click **Deploy**.
 5. Grant permissions when prompted (*Click "Advanced" -> "Go to GNOTED Webhook Sync (unsafe)" -> Allow*).
 
-#### Step 4: Add Webhook URL to GNOTED
-1. Copy the generated **Web App URL** (e.g. `https://script.google.com/macros/s/.../exec`).
-2. Open GNOTED -> Go to **Settings** -> **Cloud & Integration**.
-3. Paste the URL into **Apps Script Webhook URL** and click **Save Changes**.
-4. *(Optional)* Paste your Google Drive folder link into **Google Drive Folder Link** to store backups in a specific folder.
-5. Tap **Sync ALL Notes to Google Drive** or the sync icon in the app header.
+#### Step 4: Add Webhook URL to GNOTED or Upload APK
+- **In GNOTED App**: Paste the Webhook URL into **Settings ➔ Google Drive Webhook Integration**.
+- **To Upload GNOTED.apk directly to Google Drive**:
+  ```bash
+  node upload_apk_gdrive.js https://script.google.com/macros/s/.../exec
+  ```
 
 ---
 
@@ -122,9 +138,11 @@ npm install
 npm run dev
 ```
 
-### Build Production Bundle
+### Build Production Bundle & Android APK
 ```bash
 npm run build
+npx cap sync android
+cd android && ./gradlew assembleDebug && cd ..
 ```
 
 ---

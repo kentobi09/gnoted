@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Secure Vault</string>
-    <string name="title_activity_main">Secure Vault</string>
-    <string name="package_name">com.securevault.app</string>
-    <string name="custom_url_scheme">com.securevault.app</string>
+    <string name="app_name">GNOTED</string>
+    <string name="title_activity_main">GNOTED</string>
+    <string name="package_name">com.gnoted.app</string>
+    <string name="custom_url_scheme">com.gnoted.app</string>
 </resources>
