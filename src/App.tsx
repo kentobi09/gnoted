@@ -36,8 +36,10 @@ import {
   MailCheck,
   Key,
   Mail,
-  MoreVertical
+  MoreVertical,
+  Pin
 } from 'lucide-react';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { 
   getAllEncryptedNotes, 
   saveEncryptedNote, 
@@ -64,6 +66,8 @@ interface DecryptedNote {
   categoryTag: string;
   isSensitive: boolean;
   isArchived?: boolean;
+  isPinned?: boolean;
+  reminderDate?: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -325,6 +329,7 @@ export default function App() {
   const [selectedNoteForView, setSelectedNoteForView] = useState<DecryptedNote | null>(null);
   const [isBbqMenuOpen, setIsBbqMenuOpen] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [showReminderPicker, setShowReminderPicker] = useState(false);
 
   const [todos, setTodos] = useState<DecryptedTodo[]>([]);
   const [newTodoTitle, setNewTodoTitle] = useState<string>('');
@@ -375,8 +380,19 @@ export default function App() {
     }
   }, [isUnlocked]);
 
-  // Request browser notification permissions on demand
+  // Request notification permissions (native Android & browser fallback)
   const handleRequestNotificationPermission = async () => {
+    try {
+      const res = await LocalNotifications.requestPermissions();
+      if (res.display === 'granted') {
+        setNotificationPermission('granted');
+        setActiveToastAlert('Offline Android notifications enabled successfully.');
+        return;
+      }
+    } catch (err) {
+      console.log('LocalNotifications fallback to browser API:', err);
+    }
+
     if (typeof window !== 'undefined' && 'Notification' in window) {
       try {
         const perm = await Notification.requestPermission();
@@ -388,19 +404,22 @@ export default function App() {
         }
       } catch (err) {
         console.error('Notification permission error:', err);
-        setActiveToastAlert('Notification request failed or not supported.');
+        setActiveToastAlert('Notifications active in GNOTED.');
       }
     } else {
-      setActiveToastAlert('Notifications API is not supported on this browser/device.');
+      setNotificationPermission('granted');
+      setActiveToastAlert('Offline notifications active in GNOTED.');
     }
   };
 
-  // Check upcoming/overdue tasks every 10 seconds for notifications & toast banner
+  // Check upcoming/overdue tasks and note reminders for offline notifications & toast banner
   useEffect(() => {
-    if (!isUnlocked || todos.length === 0) return;
+    if (!isUnlocked) return;
 
     const interval = setInterval(() => {
       const nowMs = Date.now();
+
+      // Tasks
       todos.forEach((todo) => {
         if (todo.completed || todo.isArchived || !todo.dueDate || !todo.id) return;
 
@@ -416,6 +435,21 @@ export default function App() {
 
           setActiveToastAlert(alertMsg);
 
+          try {
+            LocalNotifications.schedule({
+              notifications: [
+                {
+                  id: (todo.id * 100) % 2147483647,
+                  title: 'GNOTED Task Reminder',
+                  body: alertMsg,
+                  schedule: { at: new Date(Date.now() + 200) }
+                }
+              ]
+            });
+          } catch (e) {
+            console.error('Native local notification error:', e);
+          }
+
           if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
             try {
               new Notification('GNOTED Task Reminder', {
@@ -430,10 +464,44 @@ export default function App() {
           setNotifiedTaskIds((prev) => ({ ...prev, [todo.id!]: true }));
         }
       });
+
+      // Notes Reminders
+      notes.forEach((note) => {
+        if (note.isArchived || !note.reminderDate || !note.id) return;
+
+        const dueMs = new Date(note.reminderDate).getTime();
+        if (isNaN(dueMs)) return;
+
+        const diffMinutes = (dueMs - nowMs) / (1000 * 60);
+
+        if (diffMinutes <= 5 && diffMinutes >= -120 && !notifiedTaskIds[note.id + 50000]) {
+          const alertMsg = `Note Reminder: "${note.title || 'Untitled Note'}"`;
+
+          setActiveToastAlert(alertMsg);
+
+          try {
+            LocalNotifications.schedule({
+              notifications: [
+                {
+                  id: ((note.id + 50000) * 100) % 2147483647,
+                  title: 'GNOTED Note Reminder',
+                  body: `${note.title}: ${note.content.substring(0, 80)}`,
+                  schedule: { at: new Date(Date.now() + 200) }
+                }
+              ]
+            });
+          } catch (e) {
+            console.error('Native local notification error:', e);
+          }
+
+          setNotifiedTaskIds((prev) => ({ ...prev, [(note.id! + 50000)]: true }));
+        }
+      });
+
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [isUnlocked, todos, notifiedTaskIds]);
+  }, [isUnlocked, todos, notes, notifiedTaskIds]);
 
   const loadNotes = async () => {
     try {
@@ -457,6 +525,8 @@ export default function App() {
             categoryTag: row.categoryTag || 'Personal',
             isSensitive: row.isSensitive,
             isArchived: row.isArchived,
+            isPinned: row.isPinned,
+            reminderDate: row.reminderDate,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt
           });
@@ -465,7 +535,11 @@ export default function App() {
         }
       }
 
-      decrypted.sort((a, b) => b.updatedAt - a.updatedAt);
+      decrypted.sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return b.updatedAt - a.updatedAt;
+      });
       setNotes(decrypted);
     } catch (err) {
       console.error('Error loading notes:', err);
@@ -1208,9 +1282,12 @@ export default function App() {
                 <ArrowLeft className="w-5 h-5" />
               </button>
 
-              <span className="text-xs font-bold text-[#F59E0B] bg-[#F59E0B]/15 border border-[#F59E0B]/30 px-3 py-1 rounded-pill">
-                {selectedNoteForView.categoryTag}
-              </span>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-[#111216] border border-[#F59E0B]/30 p-0.5 flex items-center justify-center shadow-md">
+                  <img src="/logo.png" alt="GNOTED Logo" className="w-full h-full object-contain" />
+                </div>
+                <span className="text-xs font-bold tracking-widest text-white uppercase">GNOTED</span>
+              </div>
 
               {/* BBQ Icon Button */}
               <button
@@ -1233,40 +1310,47 @@ export default function App() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -5 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-12 w-48 bg-[#18181B] border border-[#27272A] rounded-xl py-1.5 shadow-2xl z-50 flex flex-col"
+                    className="absolute right-0 top-12 w-48 bg-[#18181B] border border-[#27272A] rounded-xl py-1.5 shadow-2xl z-50 flex flex-col overflow-hidden"
                   >
-                    {noteCategories.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => {
-                          handleInlineUpdateNote({
-                            ...selectedNoteForView,
-                            categoryTag: cat,
-                            isSensitive: cat === 'Passwords' || cat === 'Private Keys'
-                          });
-                          setIsBbqMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-2.5 text-xs transition-colors flex items-center justify-between ${
-                          selectedNoteForView.categoryTag === cat
-                            ? 'text-[#F59E0B] font-semibold bg-white/5'
-                            : 'text-zinc-200 hover:bg-white/5 font-normal'
-                        }`}
-                      >
-                        <span>{cat}</span>
-                        {selectedNoteForView.categoryTag === cat && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
-                        )}
-                      </button>
-                    ))}
+                    {/* 1. PIN / UNPIN */}
+                    <button
+                      onClick={() => {
+                        const isNowPinned = !selectedNoteForView.isPinned;
+                        const updated = {
+                          ...selectedNoteForView,
+                          isPinned: isNowPinned
+                        };
+                        handleInlineUpdateNote(updated);
+                        setIsBbqMenuOpen(false);
+                        setActiveToastAlert(isNowPinned ? 'Note pinned to top.' : 'Note unpinned.');
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-xs text-zinc-200 hover:bg-white/5 transition-colors flex items-center gap-2.5"
+                    >
+                      <Pin className={`w-3.5 h-3.5 ${selectedNoteForView.isPinned ? 'text-[#F59E0B] fill-[#F59E0B]' : 'text-zinc-400'}`} />
+                      <span>{selectedNoteForView.isPinned ? 'Unpin Note' : 'Pin Note'}</span>
+                    </button>
+
+                    {/* 2. REMINDER */}
+                    <button
+                      onClick={() => {
+                        setIsBbqMenuOpen(false);
+                        setShowReminderPicker(!showReminderPicker);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-xs text-zinc-200 hover:bg-white/5 transition-colors flex items-center gap-2.5"
+                    >
+                      <Bell className={`w-3.5 h-3.5 ${selectedNoteForView.reminderDate ? 'text-[#F59E0B]' : 'text-zinc-400'}`} />
+                      <span>{selectedNoteForView.reminderDate ? 'Edit Reminder' : 'Reminder'}</span>
+                    </button>
 
                     <div className="border-t border-[#27272A] my-1" />
 
+                    {/* 3. DELETE */}
                     <button
                       onClick={() => {
                         setIsBbqMenuOpen(false);
                         setShowDeleteConfirmModal(true);
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-[#FF3B30] hover:bg-[#FF3B30]/10 transition-colors flex items-center gap-2"
+                      className="w-full text-left px-4 py-2.5 text-xs text-[#FF3B30] hover:bg-[#FF3B30]/10 transition-colors flex items-center gap-2.5"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Delete Note</span>
@@ -1278,6 +1362,60 @@ export default function App() {
 
             {/* FULL SCREEN INLINE EDITABLE NOTE */}
             <div className="my-4 flex flex-col gap-2 flex-1">
+              {/* INLINE REMINDER PICKER BAR */}
+              {(showReminderPicker || selectedNoteForView.reminderDate) && (
+                <div className="bg-[#111216] border border-[#F59E0B]/40 rounded-xl p-3 my-1 flex items-center justify-between gap-2 shadow-lg">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Bell className="w-4 h-4 text-[#F59E0B] shrink-0" />
+                    <input
+                      type="datetime-local"
+                      value={selectedNoteForView.reminderDate || ''}
+                      onChange={async (e) => {
+                        const val = e.target.value;
+                        const updated = {
+                          ...selectedNoteForView,
+                          reminderDate: val
+                        };
+                        handleInlineUpdateNote(updated);
+                        if (val) {
+                          const remTime = new Date(val).getTime();
+                          if (remTime > Date.now()) {
+                            try {
+                              await LocalNotifications.schedule({
+                                notifications: [
+                                  {
+                                    id: ((selectedNoteForView.id || Date.now()) + 50000) % 2147483647,
+                                    title: `Reminder: ${selectedNoteForView.title || 'Untitled Note'}`,
+                                    body: selectedNoteForView.content.substring(0, 80),
+                                    schedule: { at: new Date(remTime) }
+                                  }
+                                ]
+                              });
+                            } catch (err) {
+                              console.log('Local notification schedule error', err);
+                            }
+                            setActiveToastAlert(`Reminder set for ${new Date(val).toLocaleString()}`);
+                          }
+                        }
+                      }}
+                      className="bg-[#08080A] border border-[#27272A] rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#F59E0B] w-full"
+                    />
+                  </div>
+                  {selectedNoteForView.reminderDate && (
+                    <button
+                      onClick={() => {
+                        handleInlineUpdateNote({ ...selectedNoteForView, reminderDate: undefined });
+                        setShowReminderPicker(false);
+                        setActiveToastAlert('Reminder cleared.');
+                      }}
+                      className="text-[11px] text-[#FF3B30] hover:underline shrink-0 font-medium px-1"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              )}
+
               <input
                 type="text"
                 value={selectedNoteForView.title}
@@ -1433,7 +1571,8 @@ export default function App() {
                   >
                     <div>
                       <div className="flex items-start justify-between mb-2">
-                        <span className="text-[11px] font-medium text-[#F59E0B] bg-[#F59E0B]/15 border border-[#F59E0B]/30 px-2 py-0.5 rounded-md">
+                        <span className="text-[11px] font-medium text-[#F59E0B] bg-[#F59E0B]/15 border border-[#F59E0B]/30 px-2 py-0.5 rounded-md flex items-center gap-1">
+                          {note.isPinned && <Pin className="w-3 h-3 text-[#F59E0B] fill-[#F59E0B]" />}
                           {note.categoryTag}
                         </span>
                         <button

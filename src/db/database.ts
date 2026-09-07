@@ -9,6 +9,8 @@ export interface EncryptedNoteRow {
   categoryTag: string;
   isSensitive: boolean;
   isArchived?: boolean;
+  isPinned?: boolean;
+  reminderDate?: string;
   createdAt: number;
   updatedAt: number;
 }
