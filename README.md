@@ -155,8 +155,4 @@ npx cap sync android
 cd android && ./gradlew assembleDebug && cd ..
 ```
 
----
 
-## License
-
-This project is licensed under the **MIT License**.
