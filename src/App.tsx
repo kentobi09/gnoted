@@ -40,6 +40,8 @@ import {
   Pin
 } from 'lucide-react';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { 
   getAllEncryptedNotes, 
   saveEncryptedNote, 
@@ -944,17 +946,84 @@ export default function App() {
       };
 
       const jsonStr = JSON.stringify(backupData, null, 2);
+      const filename = `gnoted_backup_${Date.now()}.json`;
+
+      let sharedSuccessfully = false;
+
+      // 1. Native Capacitor Filesystem & Share (for Android device storage)
+      try {
+        const cacheResult = await Filesystem.writeFile({
+          path: filename,
+          data: jsonStr,
+          directory: Directory.Cache,
+          encoding: Encoding.UTF8
+        });
+
+        // Also attempt saving directly to Documents directory
+        try {
+          await Filesystem.writeFile({
+            path: filename,
+            data: jsonStr,
+            directory: Directory.Documents,
+            encoding: Encoding.UTF8
+          });
+        } catch (docErr) {
+          console.log('Documents folder save note:', docErr);
+        }
+
+        const canShare = await Share.canShare();
+        if (canShare && canShare.value) {
+          await Share.share({
+            title: 'GNOTED Backup',
+            text: 'Save your encrypted GNOTED vault backup file',
+            url: cacheResult.uri,
+            dialogTitle: 'Save Encrypted Backup'
+          });
+          sharedSuccessfully = true;
+          setBackupStatus(`Backup exported! Saved to Documents (${filename})`);
+          setActiveToastAlert('Backup ready - select folder or app to save.');
+          return;
+        }
+      } catch (nativeErr) {
+        console.log('Capacitor native export failed, falling back:', nativeErr);
+      }
+
+      // 2. Web Share API with File (Mobile WebView fallback)
+      if (!sharedSuccessfully && typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
+        try {
+          const file = new File([jsonStr], filename, { type: 'application/json' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'GNOTED Backup',
+              text: 'Save your encrypted GNOTED backup file'
+            });
+            sharedSuccessfully = true;
+            setBackupStatus(`Backup exported as ${filename}`);
+            setActiveToastAlert('Backup shared successfully.');
+            return;
+          }
+        } catch (webShareErr) {
+          console.log('Web share error:', webShareErr);
+        }
+      }
+
+      // 3. Fallback for Desktop Browsers: trigger DOM download link
       const blob = new Blob([jsonStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `gnoted_backup_${Date.now()}.json`;
+      a.download = filename;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      setBackupStatus('Encrypted backup downloaded successfully.');
+      setBackupStatus(`Encrypted backup downloaded: ${filename}`);
+      setActiveToastAlert(`Downloaded: ${filename}`);
     } catch (e) {
       console.error('Export failed:', e);
       setBackupStatus('Export failed.');
+      setActiveToastAlert('Export failed.');
     }
   };
 
