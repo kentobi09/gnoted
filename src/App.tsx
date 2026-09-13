@@ -1498,7 +1498,7 @@ export default function App() {
       <header className="flex items-center justify-between pt-2 pb-4">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-[#111216] flex items-center justify-center border border-[#F59E0B]/30 p-0.5 overflow-hidden shadow-sm">
-            <img src="/logo.png" alt="GNOTED Logo" className="w-full h-full object-cover rounded-full" />
+            <img src="/logo.png" alt="GNOTED Logo" className="w-full h-full object-contain" />
           </div>
           <span className="text-base font-bold tracking-wider text-white">GNOTED</span>
         </div>
