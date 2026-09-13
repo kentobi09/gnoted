@@ -318,7 +318,7 @@ export default function App() {
   const [shapeRotations, setShapeRotations] = useState<Record<string, number>>({});
 
   // Settings State
-  const [isEditingPassword, setIsEditingPassword] = useState(true);
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [newPasswordInput, setNewPasswordInput] = useState('');
   const [passwordChangeStatus, setPasswordChangeStatus] = useState('');
   const [isPasswordSavedFeedback, setIsPasswordSavedFeedback] = useState(false);
@@ -1987,6 +1987,7 @@ export default function App() {
                 <button 
                   onClick={() => {
                     setIsSettingsOpen(false);
+                    setIsEditingPassword(false);
                     setShowHistoryView(false);
                     setBackupStatus('');
                   }}
