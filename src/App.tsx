@@ -39,9 +39,16 @@ import {
   MoreVertical,
   Pin
 } from 'lucide-react';
+import { registerPlugin, Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
+
+interface NativeBackupPluginInterface {
+  saveToDownloads(options: { filename: string; content: string }): Promise<{ success: boolean; path: string }>;
+}
+
+const NativeBackup = registerPlugin<NativeBackupPluginInterface>('NativeBackup');
 import { 
   getAllEncryptedNotes, 
   saveEncryptedNote, 
@@ -950,46 +957,45 @@ export default function App() {
 
       let sharedSuccessfully = false;
 
-      // 1. Native Capacitor Filesystem & Share (for Android device storage)
-      try {
-        const cacheResult = await Filesystem.writeFile({
-          path: filename,
-          data: jsonStr,
-          directory: Directory.Cache,
-          encoding: Encoding.UTF8
-        });
-
-        // Also attempt saving directly to Documents directory
+      // 1. If running on native Android app: save directly to phone's public Downloads directory
+      if (Capacitor.isNativePlatform()) {
         try {
-          await Filesystem.writeFile({
-            path: filename,
-            data: jsonStr,
-            directory: Directory.Documents,
-            encoding: Encoding.UTF8
-          });
-        } catch (docErr) {
-          console.log('Documents folder save note:', docErr);
-        }
+          const res = await NativeBackup.saveToDownloads({ filename, content: jsonStr });
+          if (res && res.success) {
+            setBackupStatus(`Saved to phone: ${res.path}`);
+            setActiveToastAlert(`Saved to Downloads: ${filename}`);
+            return;
+          }
+        } catch (nativeErr: any) {
+          console.error('Native saveToDownloads error:', nativeErr);
 
-        const canShare = await Share.canShare();
-        if (canShare && canShare.value) {
-          await Share.share({
-            title: 'GNOTED Backup',
-            text: 'Save your encrypted GNOTED vault backup file',
-            url: cacheResult.uri,
-            dialogTitle: 'Save Encrypted Backup'
-          });
-          sharedSuccessfully = true;
-          setBackupStatus(`Backup exported! Saved to Documents (${filename})`);
-          setActiveToastAlert('Backup ready - select folder or app to save.');
-          return;
+          // Fallback to Share sheet if direct Downloads write encountered an issue
+          try {
+            const cacheResult = await Filesystem.writeFile({
+              path: filename,
+              data: jsonStr,
+              directory: Directory.Cache,
+              encoding: Encoding.UTF8
+            });
+            await Share.share({
+              title: 'GNOTED Backup',
+              text: 'Save your encrypted GNOTED backup file',
+              url: cacheResult.uri,
+              dialogTitle: 'Save Encrypted Backup'
+            });
+            setBackupStatus(`Select destination to save ${filename}`);
+            return;
+          } catch (shareErr: any) {
+            console.error('Share fallback error:', shareErr);
+            setBackupStatus(`Failed to save backup: ${nativeErr?.message || shareErr?.message || 'Storage error'}`);
+            setActiveToastAlert('Failed to save backup file to device.');
+            return;
+          }
         }
-      } catch (nativeErr) {
-        console.log('Capacitor native export failed, falling back:', nativeErr);
       }
 
-      // 2. Web Share API with File (Mobile WebView fallback)
-      if (!sharedSuccessfully && typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
+      // 2. Web Share API fallback
+      if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
         try {
           const file = new File([jsonStr], filename, { type: 'application/json' });
           if (navigator.canShare({ files: [file] })) {
@@ -998,9 +1004,8 @@ export default function App() {
               title: 'GNOTED Backup',
               text: 'Save your encrypted GNOTED backup file'
             });
-            sharedSuccessfully = true;
-            setBackupStatus(`Backup exported as ${filename}`);
-            setActiveToastAlert('Backup shared successfully.');
+            setBackupStatus(`Backup shared: ${filename}`);
+            setActiveToastAlert('Backup shared.');
             return;
           }
         } catch (webShareErr) {
@@ -1008,21 +1013,26 @@ export default function App() {
         }
       }
 
-      // 3. Fallback for Desktop Browsers: trigger DOM download link
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      setBackupStatus(`Encrypted backup downloaded: ${filename}`);
-      setActiveToastAlert(`Downloaded: ${filename}`);
-    } catch (e) {
+      // 3. Fallback for Desktop Web Browsers only
+      try {
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setBackupStatus(`Backup downloaded: ${filename}`);
+        setActiveToastAlert(`Downloaded: ${filename}`);
+      } catch (browserErr) {
+        setBackupStatus('Export failed on this browser.');
+        setActiveToastAlert('Export failed.');
+      }
+    } catch (e: any) {
       console.error('Export failed:', e);
-      setBackupStatus('Export failed.');
+      setBackupStatus(`Export failed: ${e?.message || 'Unknown error'}`);
       setActiveToastAlert('Export failed.');
     }
   };
